@@ -1,4 +1,4 @@
-CREATE TABLE tbl_schema (
+CREATE TABLE IF NOT EXISTS tbl_schema (
     id int unsigned NOT NULL AUTO_INCREMENT,
     version varchar(64) NOT NULL,
     timestamp bigint unsigned NOT NULL,
