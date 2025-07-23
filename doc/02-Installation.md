@@ -45,7 +45,7 @@ mysql -p -u root oidc < /usr/share/icingaweb2/modules/oidc/schema/mysql.schema.s
 
 ## Set a Database / Choose a backend - Web
 
-Create a Database as usual and set is a database for the oidc module
+Create a Database as usual and set is a database for the oidc module settings.
 
 
 ## Config via CLI
