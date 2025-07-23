@@ -47,9 +47,6 @@ mysql -p -u root oidc < /usr/share/icingaweb2/modules/oidc/schema/mysql.schema.s
 
 Create a Database as usual and set is a database for the oidc module
 
-Here you can also decide if you want to query hosts for IcingaDb or ido (monitoring)
-
-![module_backend](img/module_backend.png)
 
 ## Config via CLI
 
