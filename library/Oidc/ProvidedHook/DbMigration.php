@@ -69,30 +69,38 @@ class DbMigration extends DbMigrationHook
     {
         if ($this->version === null) {
             $conn = $this->getDb();
+            if($conn->getAdapter() instanceof Sqlite){
+                return "99.9.9";
+            }
             $schema = $this->getSchemaQuery()
                 ->columns(['version', 'success'])
                 ->orderBy('id', SORT_DESC)
                 ->limit(2);
+            try{
+                if (static::tableExists($conn, $schema->getModel()->getTableName())) {
+                    /** @var Schema $version */
 
-            if (static::tableExists($conn, $schema->getModel()->getTableName())) {
-                /** @var Schema $version */
+                    foreach ($schema as $version) {
+                        if ($version->success) {
+                            $this->version = $version->version;
 
-                foreach ($schema as $version) {
-                    if ($version->success) {
-                        $this->version = $version->version;
-
-                        break;
+                            break;
+                        }
                     }
-                }
 
-                if (! $this->version) {
-                    // Schema version table exist, but the user has probably deleted the entry!
-                    $this->version = '0.5.7';
-                }
+                    if (! $this->version) {
+                        // Schema version table exist, but the user has probably deleted the entry!
+                        $this->version = '0.0.0';
+                    }
 
-            } else {
-                $this->version = '0.0.0';
+                } else {
+
+                    $this->version = '0.0.0';
+                }
+            }catch (\Throwable $e){
+                $this->version = '99.0.0';
             }
+
         }
 
         return $this->version;
