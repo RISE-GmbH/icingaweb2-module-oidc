@@ -37,7 +37,7 @@ class FileHelper
 
     public function getFile($fileToGet){
         $filePath = $this->path.DIRECTORY_SEPARATOR.$fileToGet;
-        if (strpos(realpath($filePath), $this->path) !== false && file_exists($filePath)) {
+        if (file_exists($filePath)) {
             return ['realPath'=>$filePath, 'size'=>filesize($filePath), 'name'=>$fileToGet];
         }
         return false;
