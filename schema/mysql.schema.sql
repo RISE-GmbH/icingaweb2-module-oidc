@@ -19,7 +19,8 @@ CREATE TABLE tbl_provider (
     buttoncolor  varchar(255) NOT NULL,
     textcolor  varchar(255) NOT NULL,
     caption  varchar(255) NOT NULL,
-    enabled        enum ('y', 'n')          DEFAULT 'n' NOT NULL,
+    enforce_scheme_https enum ('y', 'n') DEFAULT 'n' NOT NULL,
+    enabled        enum ('y', 'n')  DEFAULT 'n' NOT NULL,
     ctime bigint unsigned DEFAULT NULL,
     mtime bigint unsigned DEFAULT NULL,
     UNIQUE uq_oidc_provider_name (name) USING BTREE

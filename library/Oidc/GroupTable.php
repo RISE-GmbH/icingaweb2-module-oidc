@@ -10,7 +10,9 @@ use DateTimeZone;
 use Icinga\Authentication\Auth;
 use Icinga\Module\Oidc\Model\Group;
 use Icinga\Web\Url;
+use ipl\Html\Html;
 use ipl\Orm\Model;
+use ipl\Web\Widget\Icon;
 
 /**
  * Table widget to display a list of Groups
@@ -18,7 +20,7 @@ use ipl\Orm\Model;
 class GroupTable extends DataTable
 {
     protected $defaultAttributes = [
-        'class'            => 'usage-table common-table table-row-selectable',
+        'class'            => 'usage-table common-table',
         'data-base-target' => '_next'
     ];
 
@@ -39,6 +41,15 @@ class GroupTable extends DataTable
                                 return $data->provider->name;
                             }
                             return t("not set");
+                        }
+                    ];
+                    continue;
+                }
+                if ($column === "name"){
+                    $columns[$column."_link"] = [
+                        'label'  => $options['label']??$column,
+                        'column' => function ($data) use ($column) {
+                            return Html::tag('a',['data-base-target'=>'_next',"href"=>\ipl\Web\Url::fromPath("group/show", ['backend'=>$data->provider->name, 'group'=>$data->name])],$data->name);
                         }
                     ];
                     continue;
@@ -71,7 +82,26 @@ class GroupTable extends DataTable
                 $columns[$column] = $options;
             }
         }
+        if (Auth::getInstance()->hasPermission('oidc/group/modify')) {
+            $columns['action'] = [
+                'label' => mt('packagemirror', 'Action'),
+                'attributes' => ['class' => 'icon-col'],
+                'column' => function ($data) {
+                    return $data;
+                },
+                'renderer' => function ($data) {
+                    $div=Html::tag("div",['class'=>'action-column']);
 
+                    $icon=  new Icon('pencil', ['title' => mt('oidc', 'Edit')]);
+                    $a = Html::tag("a",['data-icinga-modal' => true, 'data-no-icinga-ajax' => true, 'class'=>'action-item','href'=> \ipl\Web\Url::fromPath('oidc/group/edit',['id'=>$data->id])]);
+                    $a->add($icon);
+                    $div->add($a);#
+
+
+                    return $div;
+                }
+            ];
+        }
 
         return $columns;
     }
@@ -80,14 +110,6 @@ class GroupTable extends DataTable
     protected function renderRow(Model $row)
     {
         $tr = parent::renderRow($row);
-
-        if (Auth::getInstance()->hasPermission('oidc/group/modify')) {
-            $url = Url::fromPath('oidc/group/edit', ['id' => $row->id]);
-
-            $tr->getFirst("td")->getAttributes()->add(['href' => $url->getAbsoluteUrl(), 'data-icinga-modal' => true,
-                'data-no-icinga-ajax' => true]);
-
-        }
 
         return $tr;
     }

@@ -19,6 +19,7 @@ CREATE TABLE tbl_provider (
     buttoncolor  character varying(255) NOT NULL,
     textcolor  character varying(255) NOT NULL,
     caption  character varying(255) NOT NULL,
+    enforce_scheme_https boolenum DEFAULT 'n' NOT NULL,
     enabled  boolenum DEFAULT 'n' NOT NULL,
     ctime  bigint DEFAULT NULL,
     mtime  bigint DEFAULT NULL

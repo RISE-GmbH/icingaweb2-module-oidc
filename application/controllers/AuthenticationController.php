@@ -57,11 +57,16 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
             $oidc = new OpenIDConnectClient($provider->url, $provider->appname, $provider->secret);
 
         // Register the post-login callback URL
+
+            $scheme= $this->getRequest()->getScheme();
+            if($provider->enforce_scheme_https === true || $provider->enforce_scheme_https === 'y'){
+                $scheme="https";
+            }
             $oidc->setRedirectURL(
                 \ipl\Web\Url::fromPath('oidc/authentication/realm',['name'=>$name])
                     ->setIsExternal(true)
                     ->setHost($this->getRequest()->getHttpHost())
-                    ->setScheme($this->getRequest()->getScheme())
+                    ->setScheme($scheme)
                     ->getAbsoluteUrl()
             );
 

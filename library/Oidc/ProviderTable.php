@@ -8,7 +8,9 @@ namespace Icinga\Module\Oidc;
 use Icinga\Authentication\Auth;
 use Icinga\Module\Oidc\Model\Provider;
 use Icinga\Web\Url;
+use ipl\Html\Html;
 use ipl\Orm\Model;
+use ipl\Web\Widget\Icon;
 
 /**
  * Table widget to display a list of Providers
@@ -16,8 +18,7 @@ use ipl\Orm\Model;
 class ProviderTable extends DataTable
 {
     protected $defaultAttributes = [
-        'class'            => 'usage-table common-table table-row-selectable',
-        'data-base-target' => '_next'
+        'class'            => 'usage-table common-table',
     ];
 
     public function createColumns()
@@ -56,6 +57,26 @@ class ProviderTable extends DataTable
             }
         }
 
+        if (Auth::getInstance()->hasPermission('oidc/provider/modify')) {
+            $columns['action'] = [
+                'label' => mt('packagemirror', 'Action'),
+                'attributes' => ['class' => 'icon-col'],
+                'column' => function ($data) {
+                    return $data;
+                },
+                'renderer' => function ($data) {
+                    $div=Html::tag("div",['class'=>'action-column']);
+
+                    $icon=  new Icon('pencil', ['title' => mt('oidc', 'Edit')]);
+                    $a = Html::tag("a",['data-icinga-modal' => true, 'data-no-icinga-ajax' => true, 'class'=>'action-item','href'=> \ipl\Web\Url::fromPath('oidc/provider/edit',['id'=>$data->id])]);
+                    $a->add($icon);
+                    $div->add($a);#
+
+
+                    return $div;
+                }
+            ];
+        }
 
         return $columns;
     }
@@ -64,14 +85,6 @@ class ProviderTable extends DataTable
     protected function renderRow(Model $row)
     {
         $tr = parent::renderRow($row);
-
-        if (Auth::getInstance()->hasPermission('oidc/provider/modify')) {
-            $url = Url::fromPath('oidc/provider/edit', ['id' => $row->id]);
-
-            $tr->getFirst("td")->getAttributes()->add(['href' => $url->getAbsoluteUrl(), 'data-icinga-modal' => true,
-                'data-no-icinga-ajax' => true]);
-
-        }
 
         return $tr;
     }

@@ -114,6 +114,11 @@ class Provider extends DbModel
                 'label'=>t('Enabled'),
                 'description'=>t('Enable or disable this provider'),
             ],
+            'enforce_scheme_https'=>[
+                'fieldtype'=>'checkbox',
+                'label'=>t('Enforce Https on redirect urls'),
+                'description'=>t('This option is necessary if you run IcingaWeb2 behind a reverse proxy, since the scheme (https) cannot be detected correctly'),
+            ],
             'ctime'=>[
                 'fieldtype'=>t('localDateTime'),
                 'label'=>t('Created At'),
