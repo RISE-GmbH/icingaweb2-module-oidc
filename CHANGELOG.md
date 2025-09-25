@@ -2,6 +2,11 @@
 
 ## What's New
 
+### What's New in Version 0.7.0
+
+* bugfix logo is mandatory and form should know that too.
+* allow symlinks in files folder
+
 ### What's New in Version 0.6.9
 
 * update docs

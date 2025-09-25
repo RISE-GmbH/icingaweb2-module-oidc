@@ -83,6 +83,7 @@ class Provider extends DbModel
             'logo'=>[
                 'fieldtype'=>'select',
                 'label'=>t('Logo'),
+                'required'=>true,
                 'multiOptions'=>$fileHelper->filelistAsSelect(),
                 'description'=>t('Choose on of your previously uploaded logos')
             ],

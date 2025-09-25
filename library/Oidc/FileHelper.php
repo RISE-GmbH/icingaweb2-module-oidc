@@ -2,6 +2,8 @@
 
 namespace Icinga\Module\Oidc;
 
+use Icinga\Application\Logger;
+
 class FileHelper
 {
     protected $path = '';
@@ -21,7 +23,7 @@ class FileHelper
         $files = array_diff($files, array('.', '..'));
 
         $files = array_filter($files, function($file) use ($directory) {
-            return is_file($directory .DIRECTORY_SEPARATOR.$file);
+            return is_file($directory .DIRECTORY_SEPARATOR.$file) || is_link($directory .DIRECTORY_SEPARATOR.$file);
         });
 
         return $files;
@@ -36,8 +38,17 @@ class FileHelper
     }
 
     public function getFile($fileToGet){
-        $filePath = $this->path.DIRECTORY_SEPARATOR.$fileToGet;
-        if (strpos(realpath($filePath), $this->path) !== false && file_exists($filePath)) {
+        $allFiles = $this->fetchFileList();
+
+        // if the file is in the directory we can be sure that the access ok
+        if (in_array($fileToGet, $allFiles)) {
+            $filePath = $this->path.DIRECTORY_SEPARATOR.$fileToGet;
+
+            if(is_link($filePath)){
+                $filePath = readlink($filePath);
+            }else{
+                $filePath = realpath($filePath);
+            }
             return ['realPath'=>$filePath, 'size'=>filesize($filePath), 'name'=>$fileToGet];
         }
         return false;
