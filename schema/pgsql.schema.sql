@@ -132,4 +132,4 @@ CREATE TABLE tbl_schema (
 
 
 INSERT INTO tbl_schema (version, "timestamp", success, reason)
-VALUES ('0.5.8', CURRENT_TIMESTAMP, 'y', NULL);
+VALUES ('0.5.9', CURRENT_TIMESTAMP, 'y', NULL);
