@@ -87,4 +87,4 @@ CREATE TABLE tbl_schema (
 
 
 INSERT INTO tbl_schema (version, timestamp, success, reason)
-VALUES ('0.5.8', UNIX_TIMESTAMP() * 1000, 'y', NULL);
+VALUES ('0.5.9', UNIX_TIMESTAMP() * 1000, 'y', NULL);
