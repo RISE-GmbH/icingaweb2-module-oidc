@@ -21,7 +21,7 @@ icingacli module enable oidc
 
 Or go to your Icinga Web 2 frontend, choose `Configuration` -&gt; `Modules`, chose the `oidc` module and `enable` it.
 
-It might afterwards be necessary to refresh your web browser to be sure that
+It might afterward be necessary to refresh your web browser to be sure that
 newly provided styling is loaded.
 
 ## Setting up the Database

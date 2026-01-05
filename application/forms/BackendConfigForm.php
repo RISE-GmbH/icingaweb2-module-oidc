@@ -26,5 +26,6 @@ class BackendConfigForm extends ConfigForm
             'multiOptions'  => array_combine($dbResources, $dbResources),
             'required'      => true
         ]);
+
     }
 }

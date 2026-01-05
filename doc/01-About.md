@@ -6,3 +6,4 @@ Please read the following chapters for more insights on this module:
 
 * [Installation](02-Installation.md#module-oidc-installation)
 * [Configuration](03-Configuration.md#module-oidc-configuration)
+* [Azure guide](04-Azure.md#module-oidc-azure)

@@ -91,8 +91,27 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
 
                 $authSuccess=true;
                 $_SESSION['id_token'] = $oidc->getIdToken();
-                $claims = $oidc->requestUserInfo();
-                $username = $claims->name;
+
+                if(isset($provider->azure_groups) && ($provider->azure_groups === true || $provider->azure_groups === 'y')){
+                    $claims = $oidc->getIdTokenPayload();
+                }else{
+                    $claims = $oidc->requestUserInfo();
+                }
+
+                $fallback_username= "name";
+                if(isset($provider->custom_username) && $provider->custom_username !== ""){
+                    $custom_username = $provider->custom_username;
+                }else{
+                    $custom_username = $fallback_username;
+
+                }
+                if(isset($claims->{$custom_username}) && $claims->{$custom_username} !== ""){
+                    $username = $claims->{$custom_username};
+                }else{
+                    $username = $claims->{$fallback_username};
+                    Logger::error("Oidc: Using fallback username: ".$fallback_username. " for ".$username);
+                }
+
                 $usernameBlacklist = StringHelper::trimSplit($provider->usernameblacklist);
                 foreach ($usernameBlacklist as $notAllowedName){
                     if(fnmatch($notAllowedName,$username)){
@@ -119,7 +138,10 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
             if($oidcUser === null){
                 $oidcUser = new OidcUser();
                 $oidcUser->name=$username;
-                $oidcUser->email=$claims->email;
+                if(isset($claims->email)){
+                    $oidcUser->email=$claims->email;
+                }
+
                 $oidcUser->provider_id=$provider->id;
                 $oidcUser->lastlogin=(new \DateTime());
                 $oidcUser->ctime=(new \DateTime());
@@ -132,6 +154,9 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                     throw new HttpException(401,"User not enabled");
                 }
                 $oidcUser->lastlogin=(new \DateTime());
+                if(isset($claims->email)){
+                    $oidcUser->email=$claims->email;
+                }
                 $oidcUser->save();
 
             }

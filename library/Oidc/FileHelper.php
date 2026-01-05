@@ -2,8 +2,6 @@
 
 namespace Icinga\Module\Oidc;
 
-use Icinga\Application\Logger;
-
 class FileHelper
 {
     protected $path = '';

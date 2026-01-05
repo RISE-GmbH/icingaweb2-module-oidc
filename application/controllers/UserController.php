@@ -32,6 +32,29 @@ class UserController extends Controller
         $this->db=Database::get();
 
     }
+    public function importAction()
+    {
+
+        $this->setTitle($this->translate('New User'));
+        $name = $this->params->getRequired("name");
+        $backend = $this->params->getRequired("backend");
+        $values = ['name'=>$name, 'active'=>'y'];
+
+        $form = (UserForm::fromId(null))->setDb($this->db)
+            ->setAction((string) Url::fromRequest())->setRenderCreateAndShowButton(false)
+            ->populate($values)
+            ->on(UserForm::ON_SUCCESS, function (UserForm $form) use ($backend, $name) {
+
+                    Notification::success($this->translate('Updated User successfully'));
+                    $this->redirectNow(Url::fromPath('oidc/import/show',['user'=>$name,'backend'=>$backend]));
+
+
+            })
+            ->handleRequest($this->getServerRequest());
+
+        $this->addContent($form);
+
+    }
 
     public function newAction()
     {

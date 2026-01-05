@@ -1,0 +1,45 @@
+<?php
+
+use ipl\Stdlib\Filter;
+?>
+<div class="controls separated">
+
+<?php if(! $this->compact): ?>
+    <?= $tabs; ?>
+<?php
+    $oidcUser = \Icinga\Module\Oidc\Model\User::on(\Icinga\Module\Oidc\Common\Database::get())->filter(Filter::equal('name', $user->user_name))->first();
+    ?>
+<?php endif ?>
+    <h2><?= $this->escape($user->user_name) ?></h2>
+    <table class="name-value-table">
+        <tr>
+            <th><?= $this->translate('State'); ?></th>
+            <td><?= $user->is_active === null ? '-' : ($user->is_active ? $this->translate('Active') : $this->translate('Inactive')); ?></td>
+        </tr>
+        <tr>
+            <th><?= $this->translate('Created at'); ?></th>
+            <td><?= $user->created_at === null ? '-' : $this->formatDateTime($user->created_at); ?></td>
+        </tr>
+        <tr>
+            <th><?= $this->translate('Last modified'); ?></th>
+            <td><?= $user->last_modified === null ? '-' : $this->formatDateTime($user->last_modified); ?></td>
+        </tr>
+
+        <tr>
+            <th><?= $this->translate('OIDC'); ?></th>
+            <td>
+                <?php
+                if($oidcUser !== null){
+                    echo $this->translate('Yes');
+                }else{
+
+                    echo \ipl\Html\Html::tag('a',['href'=>\ipl\Web\Url::fromPath("oidc/user/import",['name'=>$user->user_name, 'backend'=>$backend->getName()])],"Import User to OIDC");
+                }
+                ?>
+            </td>
+        </tr>
+
+    </table>
+</div>
+
+

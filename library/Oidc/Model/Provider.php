@@ -105,10 +105,20 @@ class Provider extends DbModel
                 'description'=>t('Caption for the provider'),
                 'required'=>true
             ],
+            'custom_username'=>[
+                'fieldtype'=>'text',
+                'label'=>'Custom Username',
+                'description'=>t('By default the "name" in the claim will be used as your oidc users username, here you can overrude this as long as the property exists. If if dows not exist there is a fallback on "name"'),
+            ],
+            'azure_groups'=>[
+                'fieldtype'=>'checkbox',
+                'label'=>t('Azure Groups'),
+                'description'=>t('Enable this switch to get groups from your Azure instance'),
+            ],
             'nooidcgroups'=>[
                 'fieldtype'=>'checkbox',
-                'label'=>t('No OIDC Groups'),
-                'description'=>t('Enable this to prevent fetching any groups from the OIDC provider'),
+                'label'=>t('No OIDC Groups Request'),
+                'description'=>t('Enable this to prevent requesting any groups from the OIDC provider'),
             ],
             'enabled'=>[
                 'fieldtype'=>'checkbox',
@@ -203,6 +213,8 @@ class Provider extends DbModel
     {
         $behaviors->add((new BoolCast(['enabled'])));
         $behaviors->add((new BoolCast(['nooidcgroups'])));
+        $behaviors->add((new BoolCast(['enforce_scheme_https'])));
+        $behaviors->add((new BoolCast(['azure_groups'])));
         $behaviors->add(new MillisecondTimestamp(['mtime']));
         $behaviors->add(new MillisecondTimestamp(['ctime']));
     }

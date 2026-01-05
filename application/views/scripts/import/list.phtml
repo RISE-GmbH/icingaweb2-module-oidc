@@ -1,0 +1,59 @@
+<?php
+
+use Icinga\Data\Extensible;
+use Icinga\Data\Reducible;
+
+if (! $this->compact): ?>
+<div class="controls separated">
+    <?= $this->tabs ?>
+    <?= $this->paginator ?>
+    <div class="sort-controls-container">
+        <?= $this->limiter ?>
+        <?= $this->sortBox ?>
+    </div>
+    <?= $this->backendSelection ?>
+    <?= $this->filterEditor ?>
+</div>
+<?php endif ?>
+<div class="content">
+<?php
+
+if (! isset($backend)) {
+    echo $this->translate('No backend found which is able to list users') . '</div>';
+    return;
+}
+?>
+
+
+
+<?php if (! $users->hasResult()): ?>
+    <p><?= $this->translate('No users found matching the filter') ?></p>
+</div>
+<?php return; endif ?>
+
+    <table data-base-target="_next" class="table-row-selectable common-table">
+    <thead>
+        <tr>
+            <th><?= $this->translate('Username') ?></th>
+        </tr>
+    </thead>
+    <tbody>
+    <?php foreach ($users as $user): ?>
+        <tr>
+            <td><?= $this->qlink(
+                $user->user_name,
+                'oidc/import/show',
+                array(
+                    'backend'   => $backend->getName(),
+                    'user'      => $user->user_name
+                ),
+                array(
+                    'title'     => sprintf($this->translate('Show detailed information about %s'), $user->user_name)
+                )
+            ) ?></td>
+
+        </tr>
+    <?php endforeach ?>
+    </tbody>
+    </table>
+</div>

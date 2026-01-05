@@ -22,3 +22,4 @@ if(!Icinga::app()->isCli()){
 
 }
 $this->provideHook('DbMigration', '\\Icinga\\Module\\Oidc\\ProvidedHook\\DbMigration');
+//$this->provideHook('Oidc\\OidcImplementation', '\Icinga\Module\Oidc\ProvidedHook\Oidc\Default', true);

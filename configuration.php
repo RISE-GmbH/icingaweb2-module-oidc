@@ -18,7 +18,13 @@ $section = $this->menuSection(N_('Oidc'), [
 $this->provideConfigTab('backend', array(
     'title' => $this->translate('Configure the database backend'),
     'label' => $this->translate('Backend'),
-    'url' => 'database/backend'
+    'url' => 'config/backend'
+));
+
+$this->provideConfigTab('importbackend', array(
+    'title' => $this->translate('Configure the database backend'),
+    'label' => $this->translate('Import Backend'),
+    'url' => 'config/import-backend'
 ));
 
 ?>
@@ -57,6 +63,13 @@ $section->add(N_('Files'))
     ->setPermission('oidc/file')
     ->setPriority(30);
 
+if(count($this->getConfig('userbackends')->keys()) > 0){
+    $section->add(N_('Import'))
+        ->setUrl('oidc/import/list')
+        ->setPermission('oidc/import')
+        ->setPriority(40);
+}
+
 
 $this->providePermission(
     'oidc/file',
@@ -81,6 +94,17 @@ $this->providePermission(
 $this->providePermission(
     'oidc/file/delete',
     $this->translate('Allow deleting files')
+);
+
+$this->providePermission(
+    'config/oidc',
+    $this->translate('Allow to configure the module')
+);
+
+
+$this->providePermission(
+    'oidc/import',
+    $this->translate('Allow to use import functionality')
 );
 
 $this->provideUserBackend('oidc',\Icinga\Module\Oidc\Backend\OidcUserBackend::class);

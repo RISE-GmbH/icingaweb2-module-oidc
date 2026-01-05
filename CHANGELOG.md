@@ -2,6 +2,19 @@
 
 ## What's New
 
+### What's New in Version 0.7.2
+
+* allow to use other names that come with the oidc profile (custom_username)
+* fetching azure active directory groups using another function (azure_groups)
+* tested with MS Azure
+* added Azure documentation
+* updated jumbojett/OpenID-Connect-PHP to v1.0.2
+
+### What's New in Version 0.7.1
+
+* experimental ldap import
+* migration bug fix
+
 ### What's New in Version 0.7.0
 
 * bugfix logo is mandatory and form should know that too.

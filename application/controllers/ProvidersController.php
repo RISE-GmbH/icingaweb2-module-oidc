@@ -5,7 +5,6 @@
 
 namespace Icinga\Module\Oidc\Controllers;
 
-use Icinga\Application\Logger;
 use Icinga\Exception\ConfigurationError;
 use Icinga\Module\Oidc\ProviderRestrictor;
 use Icinga\Module\Oidc\Common\Database;
