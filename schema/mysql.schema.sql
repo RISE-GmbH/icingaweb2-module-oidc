@@ -19,7 +19,7 @@ CREATE TABLE tbl_provider (
     buttoncolor  varchar(255) NOT NULL,
     textcolor  varchar(255) NOT NULL,
     caption  varchar(255) NOT NULL,
-    custom_username  varchar(255) NOT NULL,
+    custom_username  varchar(255) DEFAULT NULL,
     enforce_scheme_https enum ('y', 'n') DEFAULT 'n' NOT NULL,
     azure_groups enum ('y', 'n') DEFAULT 'n' NOT NULL,
     enabled        enum ('y', 'n')  DEFAULT 'n' NOT NULL,
@@ -90,3 +90,4 @@ CREATE TABLE tbl_schema (
 
 INSERT INTO tbl_schema (version, timestamp, success, reason)
 VALUES ('0.5.9', UNIX_TIMESTAMP() * 1000, 'y', NULL);
+
