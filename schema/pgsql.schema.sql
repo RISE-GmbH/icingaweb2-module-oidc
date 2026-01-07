@@ -19,6 +19,8 @@ CREATE TABLE tbl_provider (
     buttoncolor  character varying(255) NOT NULL,
     textcolor  character varying(255) NOT NULL,
     caption  character varying(255) NOT NULL,
+    azure_groups boolenum DEFAULT 'n' NOT NULL,
+    custom_username character varying(255) DEFAULT NULL,
     enforce_scheme_https boolenum DEFAULT 'n' NOT NULL,
     enabled  boolenum DEFAULT 'n' NOT NULL,
     ctime  bigint DEFAULT NULL,
@@ -132,4 +134,5 @@ CREATE TABLE tbl_schema (
 
 
 INSERT INTO tbl_schema (version, "timestamp", success, reason)
-VALUES ('0.5.9', CURRENT_TIMESTAMP, 'y', NULL);
+VALUES ('0.6.0', CURRENT_TIMESTAMP, 'y', NULL);
+
