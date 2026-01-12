@@ -2,6 +2,8 @@
 
 namespace Icinga\Module\Oidc;
 
+use Icinga\Application\Config;
+use Icinga\Application\Icinga;
 use Icinga\Application\Modules\Module;
 use Icinga\Module\Oidc\Common\Database;
 use Icinga\Module\Oidc\Model\Provider;
@@ -15,13 +17,27 @@ class LoginFormModifierHelper
 
     public static function init()
     {
-
         if(! empty($_GET['redirect'])){
-            setcookie("oidc-redirect", $_GET['redirect'], time() + 300, "/icingaweb2/");
+            setcookie("oidc-redirect", $_GET['redirect'], time() + 300, str_replace("//","/",Icinga::app()->getRequest()->getBasePath()."/"));
         }else{
-            setcookie("oidc-redirect", "", time() -3600, "/icingaweb2/");
+            setcookie("oidc-redirect", "", time() -3600, str_replace("//","/",Icinga::app()->getRequest()->getBasePath()."/"));
 
         }
+        $relogin = Config::module('oidc')->get("experimental","relogin", "0") === "1";
+
+        if ($relogin) {
+            if(strpos(Icinga::app()->getRequest()->getUrl(),"oidc-logout") === false){
+
+                if( !empty($_COOKIE['oidc-internalurl'] ) ){
+                    $redirect = $_COOKIE['oidc-internalurl'];
+                    Icinga::app()->getRequest()->getResponse()->redirectAndExit($redirect);
+                }
+            }
+        }
+
+
+
+
 
     }
     public static function renderAfterForm()

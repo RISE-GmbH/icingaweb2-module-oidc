@@ -586,7 +586,7 @@ class OpenIDConnectClient
      *
      * @throws OpenIDConnectClientException
      */
-    protected function getProviderConfigValue(string $param, $default = null)
+    public function getProviderConfigValue(string $param, $default = null)
     {
         // If the configuration value is not available, attempt to fetch it from a well known config endpoint
         // This is also known as auto "discovery"

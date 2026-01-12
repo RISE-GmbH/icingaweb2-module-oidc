@@ -63,6 +63,13 @@ This allows you to fetch the account using ldap with the IcingaWeb2 LDAP functio
   ![Resource](img/import-ldap-backend.png)
 * You will see a menu item in the oidc modules menu for importing LDAP user.
 
+## Experimental  <a id="module-oidc-configuration-experimental"></a>
+Under the Backend config you will also find all the settings that are experimental and can be turned on.
+
+### Relogin
+For this feature we store a cookie for the last used oidc login url so we can redirect to the oidc login page.
+
+Since this breaks the logic of the AuthenticationHook and redirect to a different logoutpage, make sure to use it only if no other AuthenticationHook implements an onLogout function
 
 
 

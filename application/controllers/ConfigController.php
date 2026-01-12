@@ -32,55 +32,6 @@ class ConfigController extends CompatController
         parent::init();
     }
 
-    public function initializeDbAction()
-    {
-        $this->addTitleTab("InitializeDB");
-        $this->addContent(Html::tag("p",null,"Create sqlite database"));
-        $clean = $this->params->shift("clean");
-        $sqlFile = $this->Module()->getBaseDir().DIRECTORY_SEPARATOR."schema".DIRECTORY_SEPARATOR."sqlite.schema.sql";
-        $sqlContent = file_get_contents($sqlFile);
-        $db = Database::get();
-        if($db->getConfig()->db=="sqlite"){
-            if(!file_exists(dirname($db->getConfig()->dbname))){
-                mkdir(dirname($db->getConfig()->dbname),0755,true);
-            }
-            if($clean != null){
-                unlink($db->getConfig()->dbname);
-            }
-
-            $database = new SQLite3($db->getConfig()->dbname);
-            try {
-                $database->exec($sqlContent);
-
-            }catch (\Throwable $e ){
-                Logger::error($e->getMessage());
-                Notification::error("Init error: ".$e->getMessage().". Use parameter clean to force recreation of database.");
-            }
-        }
-
-    }
-    public function updateAction()
-    {
-        $this->addTitleTab("InitializeDB");
-        $this->addContent(Html::tag("p",null,"Create sqlite database"));
-
-        $db = Database::get();
-        if($db->getConfig()->db=="sqlite"){
-            if(!file_exists(dirname($db->getConfig()->dbname))){
-                mkdir(dirname($db->getConfig()->dbname),0755,true);
-            }
-
-            $database = new SQLite3($db->getConfig()->dbname);
-            try {
-                $database->exec('ALTER TABLE tbl_user ADD mapped_backend TEXT;');
-
-            }catch (\Throwable $e ){
-                Logger::error($e->getMessage());
-                Notification::error("Init error: ".$e->getMessage().". Use parameter clean to force recreation of database.");
-            }
-        }
-
-    }
     public function backendAction()
     {
         $form = (new BackendConfigForm())
