@@ -201,7 +201,11 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                         continue;
                     }
 
-                    $oidcGroup = Group::on(Database::get())->filter(Filter::equal('name', $groupname))->filter(Filter::equal('provider_id', $provider->id))->first();
+                    // IMPORTANT: group names are globally unique in the module DB schema (uq_oidc_group_name),
+                    // so we must NOT scope the lookup by provider_id. Otherwise, a second provider will
+                    // try to insert an already existing group and hit a duplicate key error.
+                    #$oidcGroup = Group::on(Database::get())->filter(Filter::equal('name', $groupname))->filter(Filter::equal('provider_id', $provider->id))->first();
+                    $oidcGroup = Group::on(Database::get())->filter(Filter::equal('name', $groupname))->first();
                     if ($oidcGroup === null) {
                         $oidcGroup = new Group();
                         $oidcGroup->name = $groupname;
