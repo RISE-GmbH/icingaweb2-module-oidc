@@ -30,5 +30,18 @@ class BackendConfigForm extends ConfigForm
             'label'         => $this->translate('Experimental Feature relogin'),
             'description'   => $this->translate('Redirect to the last used oidc login page, since this breaks the logic of the AuthenticationHook make sure to use it only if no other AuthenticationHook implements an onLogout function'),
         ]);
+        $this->addElement('select', 'groups_mapping_mode', [
+            'label'        => $this->translate('Group Mapping Mode'),
+            'description'  => $this->translate(
+                'Choose how group names are mapped into the OIDC database. '
+                . '"Shared (by name)" reuses existing groups across providers. '
+                . '"Prefixed" prefixes group names per provider to avoid name collisions.'
+            ),
+            'multiOptions' => [
+            'shared'   => $this->translate('Shared groups (by name)'),
+            'prefixed' => $this->translate('Prefixed group names per provider'),
+            ],
+            'value'        => 'shared',
+        ]);
     }
 }

@@ -20,6 +20,7 @@ CREATE TABLE tbl_provider (
     textcolor  varchar(255) NOT NULL,
     caption  varchar(255) NOT NULL,
     custom_username  varchar(255) DEFAULT NULL,
+    group_name_prefix varchar(255) DEFAULT NULL,
     enforce_scheme_https enum ('y', 'n') DEFAULT 'n' NOT NULL,
     azure_groups enum ('y', 'n') DEFAULT 'n' NOT NULL,
     enabled        enum ('y', 'n')  DEFAULT 'n' NOT NULL,

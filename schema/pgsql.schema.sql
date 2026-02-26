@@ -21,6 +21,7 @@ CREATE TABLE tbl_provider (
     caption  character varying(255) NOT NULL,
     azure_groups boolenum DEFAULT 'n' NOT NULL,
     custom_username character varying(255) DEFAULT NULL,
+    group_name_prefix character varying(255) DEFAULT NULL,
     enforce_scheme_https boolenum DEFAULT 'n' NOT NULL,
     enabled  boolenum DEFAULT 'n' NOT NULL,
     ctime  bigint DEFAULT NULL,

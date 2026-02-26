@@ -15,8 +15,8 @@ use Icinga\Module\Oidc\LoginFormModifierHelper;
 use Icinga\Module\Oidc\Model\Group;
 use Icinga\Module\Oidc\Model\GroupMembership;
 use Icinga\Module\Oidc\Model\Provider;
-use Icinga\User;
 use Icinga\Module\Oidc\Model\User as OidcUser;
+use Icinga\User;
 use Icinga\Util\StringHelper;
 use ipl\Html\Html;
 use ipl\Stdlib\Filter;
@@ -39,12 +39,10 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
         parent::loginAction();
         LoginFormModifierHelper::init();
         $this->view->form = $this->view->form . "\n" . LoginFormModifierHelper::renderAfterForm();
-
     }
 
     public function realmAction()
     {
-
         $name = $this->params->getRequired("name");
 
         $authSuccess = false;
@@ -55,15 +53,16 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
         if (!$provider->enabled) {
             throw new HttpException(405, "Provider not enabled");
         }
+
         try {
             $oidc = new OpenIDConnectClient($provider->url, $provider->appname, $provider->secret);
 
             // Register the post-login callback URL
-
             $scheme = $this->getRequest()->getScheme();
             if ($provider->enforce_scheme_https === true || $provider->enforce_scheme_https === 'y') {
                 $scheme = "https";
             }
+
             $oidcUrl = \ipl\Web\Url::fromPath('oidc/authentication/realm', ['name' => $name])
                 ->setIsExternal(true)
                 ->setHost($this->getRequest()->getHttpHost())
@@ -71,12 +70,16 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                 ->getAbsoluteUrl();
 
             $oidc->setRedirectURL($oidcUrl);
-            $relogin = Config::module('oidc')->get("experimental","relogin", "0") === "1";
 
+            $relogin = Config::module('oidc')->get("experimental", "relogin", "0") === "1";
             if ($relogin) {
-                setcookie("oidc-internalurl", $oidcUrl, time() + 60 * 60 * 24 * 3, str_replace("//","/",Icinga::app()->getRequest()->getBasePath()."/")); // needs to be a cookie to work after logout
+                setcookie(
+                    "oidc-internalurl",
+                    $oidcUrl,
+                    time() + 60 * 60 * 24 * 3,
+                    str_replace("//", "/", Icinga::app()->getRequest()->getBasePath() . "/")
+                ); // needs to be a cookie to work after logout
             }
-
 
             // Register what scopes you need.
             // Initiate the login process at the OP
@@ -88,12 +91,15 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
 
             $redirect = "dashboard";
 
-
             if ($oidc->authenticate()) {
-
                 if (!empty($_COOKIE['oidc-redirect'])) {
                     $redirect = $_COOKIE['oidc-redirect'];
-                    setcookie("oidc-redirect", "", time() - 3600, str_replace("//","/",Icinga::app()->getRequest()->getBasePath()."/"));
+                    setcookie(
+                        "oidc-redirect",
+                        "",
+                        time() - 3600,
+                        str_replace("//", "/", Icinga::app()->getRequest()->getBasePath() . "/")
+                    );
                 }
 
                 $authSuccess = true;
@@ -110,8 +116,8 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                     $custom_username = $provider->custom_username;
                 } else {
                     $custom_username = $fallback_username;
-
                 }
+
                 if (isset($claims->{$custom_username}) && $claims->{$custom_username} !== "") {
                     $username = $claims->{$custom_username};
                 } else {
@@ -125,39 +131,36 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                         throw new HttpException(401, "Username not allowed for this provider");
                     }
                 }
+
                 if (session_status() == PHP_SESSION_ACTIVE) {
                     // Icinga wants to handle the session so we destroy ours
                     session_destroy();
                 }
-
             }
-
         } catch (\Throwable $e) {
             Logger::error($e->getMessage());
             Logger::error($e->getTraceAsString());
-
-
         }
 
-
         if ($authSuccess && $claims != null) {
-            $oidcUser = OidcUser::on(Database::get())->filter(Filter::equal('name', $username))->filter(Filter::equal('provider_id', $provider->id))->first();
+            $oidcUser = OidcUser::on(Database::get())
+                ->filter(Filter::equal('name', $username))
+                ->filter(Filter::equal('provider_id', $provider->id))
+                ->first();
+
             if ($oidcUser === null) {
                 $oidcUser = new OidcUser();
                 $oidcUser->name = $username;
                 if (isset($claims->email)) {
                     $oidcUser->email = $claims->email;
                 }
-
                 $oidcUser->provider_id = $provider->id;
                 $oidcUser->lastlogin = (new \DateTime());
                 $oidcUser->ctime = (new \DateTime());
                 $oidcUser->active = 'y';
                 $oidcUser->save();
-
             } else {
                 if (!$oidcUser->active) {
-
                     throw new HttpException(401, "User not enabled");
                 }
                 $oidcUser->lastlogin = (new \DateTime());
@@ -165,11 +168,11 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                     $oidcUser->email = $claims->email;
                 }
                 $oidcUser->save();
-
             }
-            $groupsSynclist = StringHelper::trimSplit($provider->syncgroups);
-            if (isset($claims->groups) && is_array($claims->groups)) {
 
+            $groupsSynclist = StringHelper::trimSplit($provider->syncgroups);
+
+            if (isset($claims->groups) && is_array($claims->groups)) {
                 if ($provider->required_groups !== null && $provider->required_groups !== "") {
                     $requiredGroups = StringHelper::trimSplit($provider->required_groups);
                     $hasRequiredGroup = count($this->filter_by_patterns($claims->groups, $requiredGroups)) > 0;
@@ -178,12 +181,15 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                     }
                 }
 
-
                 if (isset($provider->defaultgroup) && $provider->defaultgroup !== null && $provider->defaultgroup !== "") {
                     $claims->groups[] = $provider->defaultgroup;
                     $groupsSynclist[] = $provider->defaultgroup;
                 }
 
+                $groupMappingMode = Config::module('oidc')->get('groups', 'mapping_mode', 'shared');
+
+                // Keep a list of effective (mapped) group names so cleanup works for both shared and prefixed modes
+                $effectiveGroupNames = [];
 
                 foreach ($claims->groups as $key => $group) {
                     $groupname = $group;
@@ -196,25 +202,50 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                             break;
                         }
                     }
+
                     if (!$validGroup) {
                         unset($claims->groups[$key]);
                         continue;
                     }
 
+                    $effectiveGroupName = $groupname;
+
+                    if ($groupMappingMode === 'prefixed') {
+                        $prefix = $provider->group_name_prefix;
+
+                        if ($prefix === null || $prefix === '') {
+                            // Default prefix derived from provider name (sanitized) to avoid collisions by default
+                            $base = strtolower($provider->name);
+                            $base = preg_replace('/\s+/', '-', $base);
+                            $base = preg_replace('/[^a-z0-9_-]/', '', $base);
+                            $prefix = $base . ':';
+                        }
+
+                        $effectiveGroupName = $prefix . $groupname;
+                    }
+
+                    $effectiveGroupNames[] = $effectiveGroupName;
+
                     // IMPORTANT: group names are globally unique in the module DB schema (uq_oidc_group_name),
                     // so we must NOT scope the lookup by provider_id. Otherwise, a second provider will
                     // try to insert an already existing group and hit a duplicate key error.
-                    #$oidcGroup = Group::on(Database::get())->filter(Filter::equal('name', $groupname))->filter(Filter::equal('provider_id', $provider->id))->first();
-                    $oidcGroup = Group::on(Database::get())->filter(Filter::equal('name', $groupname))->first();
+                    $oidcGroup = Group::on(Database::get())
+                        ->filter(Filter::equal('name', $effectiveGroupName))
+                        ->first();
+
                     if ($oidcGroup === null) {
                         $oidcGroup = new Group();
-                        $oidcGroup->name = $groupname;
+                        $oidcGroup->name = $effectiveGroupName;
                         $oidcGroup->provider_id = $provider->id;
                         $oidcGroup->ctime = (new \DateTime());
                         $oidcGroup->save();
                     }
 
-                    $membership = GroupMembership::on(Database::get())->filter(Filter::equal('username', $oidcUser->name))->filter(Filter::equal('group_id', $oidcGroup->id))->first();
+                    $membership = GroupMembership::on(Database::get())
+                        ->filter(Filter::equal('username', $oidcUser->name))
+                        ->filter(Filter::equal('group_id', $oidcGroup->id))
+                        ->first();
+
                     if ($membership === null) {
                         $membership = new GroupMembership();
                         $membership->username = $oidcUser->name;
@@ -223,49 +254,61 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                         $membership->ctime = (new \DateTime());
                         $membership->save();
                     }
-
                 }
-                $memberships = GroupMembership::on(Database::get())->filter(Filter::equal('username', $oidcUser->name));
+
+                // Cleanup memberships for this user/provider only, based on effective group names
+                $memberships = GroupMembership::on(Database::get())
+                    ->filter(Filter::equal('username', $oidcUser->name))
+                    ->filter(Filter::equal('provider_id', $provider->id));
+
                 foreach ($memberships as $membership) {
-                    $group = Group::on(Database::get())->filter(Filter::equal('id', $membership->group_id))->first();
-                    if ($group !== null && !in_array($group->name, $claims->groups)) {
+                    $group = Group::on(Database::get())
+                        ->filter(Filter::equal('id', $membership->group_id))
+                        ->first();
+
+                    if ($group !== null && !in_array($group->name, $effectiveGroupNames)) {
                         $membership->delete();
                     }
                 }
-
             } else {
                 if ($provider->required_groups !== null && $provider->required_groups !== "") {
-                    //since there is an empty group claim we can't satisfy required_groups
+                    // since there is an empty group claim we can't satisfy required_groups
                     throw new HttpException(401, "User has not any required group for this provider");
                 }
             }
 
-
             $auth = Auth::getInstance();
 
             if (isset($oidcUser->mapped_local_user) && $oidcUser->mapped_local_user !== "" && $oidcUser->mapped_local_user !== null) {
-
                 $user = new User($oidcUser->mapped_local_user);
 
                 if (isset($oidcUser->mapped_backend) && $oidcUser->mapped_backend !== "" && $oidcUser->mapped_backend !== null) {
                     $backendName = $oidcUser->mapped_backend;
                     $backendType = Config::app('authentication')->getSection($backendName)->get('backend');
-
                 } else {
                     $backendName = null;
                     $backendType = null;
                 }
 
-                AuditHook::logActivity('login-oidc', sprintf("Oidc-user %s logged in as %s", $oidcUser->name, $oidcUser->mapped_local_user), null, $oidcUser->name);
-
+                AuditHook::logActivity(
+                    'login-oidc',
+                    sprintf("Oidc-user %s logged in as %s", $oidcUser->name, $oidcUser->mapped_local_user),
+                    null,
+                    $oidcUser->name
+                );
             } else {
                 $backendName = $provider->getUserBackendName();
                 $backendType = 'oidc';
                 $user = new User($oidcUser->name);
-                AuditHook::logActivity('login-oidc', sprintf("Oidc-user %s logged in as %s", $oidcUser->name, $oidcUser->name), null, $oidcUser->name);
 
-
+                AuditHook::logActivity(
+                    'login-oidc',
+                    sprintf("Oidc-user %s logged in as %s", $oidcUser->name, $oidcUser->name),
+                    null,
+                    $oidcUser->name
+                );
             }
+
             if (!$user->hasDomain()) {
                 $user->setDomain(Config::app()->get('authentication', 'default_domain'));
             }
@@ -280,8 +323,6 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
         }
 
         $this->redirectNow("oidc/authentication/failed");
-
-
     }
 
     public function filter_by_patterns($array, $patterns)
@@ -304,7 +345,6 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
         $div->add($html);
         $this->view->form = $this->view->form . $div;
         $this->_helper->viewRenderer->setRender('authentication/login', null, true);
-
     }
 
     public function oidcLogoutAction()
@@ -313,5 +353,4 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
         $this->_helper->viewRenderer->setRender('authentication/login', null, true);
         $this->loginAction();
     }
-
 }
