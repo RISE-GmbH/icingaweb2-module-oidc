@@ -186,7 +186,9 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                     $groupsSynclist[] = $provider->defaultgroup;
                 }
 
-                $groupMappingMode = Config::module('oidc')->get('groups', 'mapping_mode', 'shared');
+                $groupMappingStrategy = isset($provider->group_mapping_strategy) && $provider->group_mapping_strategy !== ''
+                    ? $provider->group_mapping_strategy
+                    : 'shared';
 
                 // Keep a list of effective (mapped) group names so cleanup works for both shared and prefixed modes
                 $effectiveGroupNames = [];
@@ -210,7 +212,7 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
 
                     $effectiveGroupName = $groupname;
 
-                    if ($groupMappingMode === 'prefixed') {
+                    if ($groupMappingStrategy === 'prefixed') {
                         $prefix = $provider->group_name_prefix;
 
                         if ($prefix === null || $prefix === '') {

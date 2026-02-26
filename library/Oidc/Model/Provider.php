@@ -75,10 +75,21 @@ class Provider extends DbModel
                 'label'=>'Required Groups',
                 'description'=>t('If this is set each user will need to be in one of these groups to be able to login, for example "icinga-login, ubuntu-admin", leave empty if you do not need this.'),
             ],
+            'group_mapping_strategy' => [
+                'fieldtype'    => 'select',
+                'label'        => t('Group Mapping Strategy'),
+                'description'  => t('Controls how group names are stored in the OIDC database. "Shared" reuses group names across providers. "Prefixed" prefixes group names per provider to avoid name collisions.'),
+                'required'     => true,
+                'multiOptions' => [
+                    'shared'   => t('Shared (by name)'),
+                    'prefixed' => t('Prefixed (per provider)'),
+                ],
+                'value'        => 'shared',
+            ],
             'group_name_prefix' => [
                 'fieldtype'    => 'text',
                 'label'        => t('Group Name Prefix'),
-                'description'  => t('Optional prefix used when group mapping mode is set to "Prefixed". Example: "admin:" turns "icinga-admins" into "admin:icinga-admins". Leave empty to default to the provider name.'),
+                'description'  => t('Optional prefix used when the provider group mapping strategy is set to "Prefixed". Example: "admin:" turns "icinga-admins" into "admin:icinga-admins". Leave empty to default to the provider name.'),
             ],
             'usernameblacklist'=>[
                 'fieldtype'=>'text',
