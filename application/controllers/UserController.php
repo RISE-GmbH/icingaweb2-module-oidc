@@ -189,7 +189,7 @@ class UserController extends Controller
             ->on(ImpersonateForm::ON_SUCCESS, function (ImpersonateForm $form) use ($oidcUser, $provider) {
                 $pressedButton = $form->getPressedSubmitElement();
                 if ($pressedButton) {
-                    Notification::success($this->translate('Updated User successfully'));
+                    Notification::success($this->translate('Changed User successfully'));
                     $auth = Auth::getInstance();
                     $oldUsername = $auth->getUser()->getUserName();
                     $backendType =null;
