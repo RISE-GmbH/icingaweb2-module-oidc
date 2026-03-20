@@ -28,7 +28,7 @@ class BackendConfigForm extends ConfigForm
         ]);
         $this->addElement('checkbox', 'experimental_relogin', [
             'label'         => $this->translate('Experimental Feature relogin'),
-            'description'   => $this->translate('Redirect to the last used oidc login page, since this breaks the logic of the AuthenticationHook make sure to use it only if no other AuthenticationHook implements an onLogout function'),
+            'description'   => $this->translate('Redirect to the last used oidc login page, since this breaks the logic of the AuthenticationHook make sure to use it only if no other Authentification Hook implements an onLogout function'),
         ]);
     }
 }

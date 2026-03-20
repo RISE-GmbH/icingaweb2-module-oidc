@@ -5,8 +5,16 @@
 
 namespace Icinga\Module\Oidc\Controllers;
 
+
+use Icinga\Application\Config;
+use Icinga\Application\Hook\AuditHook;
+use Icinga\Application\Hook\AuthenticationHook;
+use Icinga\Authentication\Auth;
 use Icinga\Exception\Http\HttpException;
+use Icinga\Exception\Http\HttpMethodNotAllowedException;
 use Icinga\Exception\NotFoundError;
+use Icinga\Module\Oidc\Forms\ImpersonateForm;
+use Icinga\Module\Oidc\Model\Provider;
 use Icinga\Module\Oidc\UserRestrictor;
 use Icinga\Module\Oidc\Controller;
 use Icinga\Module\Oidc\Forms\UserForm;
@@ -155,4 +163,76 @@ class UserController extends Controller
             $this->redirectNow($url);
         }
     }
+
+    public function impersonateAction()
+    {
+        $this->assertPermission('oidc/user/impersonate');
+        $this->setTitle($this->translate('Impersonate'));
+
+
+        $query = User::on(Database::get())
+            ->filter(Filter::equal('name', $this->params->getRequired('username')));
+
+        $restrictor = new UserRestrictor();
+        $restrictor->applyRestrictions($query);
+
+        $oidcUser = $query->first();
+        if ($oidcUser === null) {
+            throw new NotFoundError(t('Entry not found'));
+        }
+        $provider = Provider::on(Database::get())->filter(Filter::equal('id', $oidcUser->provider_id))->first();
+
+
+
+        $form = (ImpersonateForm::fromUser($oidcUser))
+            ->setAction((string) Url::fromRequest())->setRedirectUrl(Url::fromPath('dashboard'))
+            ->on(ImpersonateForm::ON_SUCCESS, function (ImpersonateForm $form) use ($oidcUser, $provider) {
+                $pressedButton = $form->getPressedSubmitElement();
+                if ($pressedButton) {
+                    Notification::success($this->translate('Updated User successfully'));
+                    $auth = Auth::getInstance();
+                    $oldUsername = $auth->getUser()->getUserName();
+                    $backendType =null;
+                    if (isset($oidcUser->mapped_local_user) && $oidcUser->mapped_local_user !== "" && $oidcUser->mapped_local_user !== null) {
+
+                        $user = new \Icinga\User($oidcUser->mapped_local_user);
+
+                        if (isset($oidcUser->mapped_backend) && $oidcUser->mapped_backend !== "" && $oidcUser->mapped_backend !== null) {
+                            $backendName = $oidcUser->mapped_backend;
+                            $backendType = Config::app('authentication')->getSection($backendName)->get('backend');
+
+                        } else {
+                            $backendName = null;
+                            $backendType = null;
+                        }
+
+
+                    } else {
+                        $backendName = $provider->getUserBackendName();
+                        $backendType = 'oidc';
+                        $user = new \Icinga\User($oidcUser->name);
+                    }
+
+                    AuditHook::logActivity('login-impersonate',sprintf("User logged in as %s", $user->getUsername()), null, $oldUsername);
+
+                    $user->setAdditional('backend_name', $backendName);
+                    $user->setAdditional('backend_type', $backendType);
+                    $user->setAdditional('provider_id', $provider->id);
+
+                    $auth->setAuthenticated($user);
+
+
+                    // Call provided AuthenticationHook(s) after successful login
+                    AuthenticationHook::triggerLogin($user);
+                    $this->getResponse()->setHeader('X-Icinga-Rerender-Layout', 'yes', true);
+                    $this->getResponse()->setHeader('X-Icinga-Reload-Css', 'now', true);
+                    $this->getResponse()->setHeader('X-Icinga-Redirect',  rawurlencode(Url::fromPath('dashboard')->getAbsoluteUrl()), true);
+                }
+            })
+            ->handleRequest($this->getServerRequest());
+
+        $this->addContent($form);
+
+    }
+
 }

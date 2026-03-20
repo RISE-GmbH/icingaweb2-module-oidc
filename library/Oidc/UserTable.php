@@ -91,10 +91,19 @@ class UserTable extends DataTable
                 'renderer' => function ($data) {
                     $div=Html::tag("div",['class'=>'action-column']);
 
-                    $icon=  new Icon('pencil', ['title' => mt('oidc', 'Edit')]);
-                    $a = Html::tag("a",['data-icinga-modal' => true, 'data-no-icinga-ajax' => true, 'class'=>'action-item','href'=> \ipl\Web\Url::fromPath('oidc/user/edit',['id'=>$data->id])]);
-                    $a->add($icon);
-                    $div->add($a);#
+                    if(Auth::getInstance()->hasPermission('oidc/user/modify')){
+                        $icon=  new Icon('pencil', ['title' => mt('oidc', 'Edit')]);
+                        $a = Html::tag("a",['data-icinga-modal' => true, 'data-no-icinga-ajax' => true, 'class'=>'action-item','href'=> \ipl\Web\Url::fromPath('oidc/user/edit',['id'=>$data->id])]);
+                        $a->add($icon);
+                        $div->add($a);#
+                    }
+
+                    if(Auth::getInstance()->hasPermission('oidc/user/impersonate')){
+                        $icon=  new Icon('unlock', ['title' => mt('oidc', 'Impersonate')]);
+                        $a = Html::tag("a",['data-icinga-modal' => true, 'data-no-icinga-ajax' => true, 'class'=>'action-item','href'=> \ipl\Web\Url::fromPath('oidc/user/impersonate',['username'=>$data->name])]);
+                        $a->add($icon);
+                        $div->add($a);#
+                    }
 
 
                     return $div;

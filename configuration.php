@@ -2,6 +2,65 @@
 
 /** @var \Icinga\Application\Modules\Module $this */
 
+$this->providePermission(
+    'oidc/provider',
+    $this->translate('Allow listing providers')
+);
+$this->providePermission(
+    'oidc/provider/modify',
+    $this->translate('Allow modifying providers')
+);
+
+
+$this->providePermission(
+    'oidc/filelist',
+    'Allow the user to list files'
+);
+$this->providePermission(
+    'oidc/fileupload',
+    'Allow uploading files'
+);
+$this->providePermission(
+    'oidc/fileview',
+   'Allow viewing files'
+);
+$this->providePermission(
+    'oidc/filedelete',
+    $this->translate('Allow deleting files')
+);
+
+$this->providePermission(
+    'oidc/user',
+    $this->translate('Allow listing users')
+);
+$this->providePermission(
+    'oidc/user/modify',
+    $this->translate('Allow modifying users')
+);
+$this->providePermission(
+    'oidc/user/impersonate',
+    $this->translate('Allow impersonating users')
+);
+
+$this->providePermission(
+    'oidc/group',
+    $this->translate('Allow listing groups')
+);
+$this->providePermission(
+    'oidc/group/modify',
+    $this->translate('Allow modifying groups')
+);
+
+$this->providePermission(
+    'config/oidc',
+    $this->translate('Allow to configure the module')
+);
+
+
+$this->providePermission(
+    'oidc/import',
+    $this->translate('Allow to use import functionality')
+);
 
 $section = $this->menuSection(N_('Oidc'), [
     'permission' => 'oidc',
@@ -70,42 +129,6 @@ if(count($this->getConfig('userbackends')->keys()) > 0){
         ->setPriority(40);
 }
 
-
-$this->providePermission(
-    'oidc/file',
-    $this->translate('Allow the user to list files')
-);
-
-$this->providePermission(
-    'oidc/file/upload',
-    $this->translate('Allow uploading files')
-);
-
-$this->providePermission(
-    'oidc/file/view',
-    $this->translate('Allow viewing files')
-);
-
-$this->providePermission(
-    'oidc/file/download',
-    $this->translate('Allow download files')
-);
-
-$this->providePermission(
-    'oidc/file/delete',
-    $this->translate('Allow deleting files')
-);
-
-$this->providePermission(
-    'config/oidc',
-    $this->translate('Allow to configure the module')
-);
-
-
-$this->providePermission(
-    'oidc/import',
-    $this->translate('Allow to use import functionality')
-);
 
 $this->provideUserBackend('oidc',\Icinga\Module\Oidc\Backend\OidcUserBackend::class);
 $this->provideUserGroupBackend('oidc',\Icinga\Module\Oidc\Backend\OidcUserGroupBackend::class);
