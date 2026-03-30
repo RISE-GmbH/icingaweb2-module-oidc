@@ -63,7 +63,6 @@ $this->providePermission(
 );
 
 $section = $this->menuSection(N_('Oidc'), [
-    'permission' => 'oidc',
     'url' => 'oidc/providers',
     'icon' => 'img/oidc/openid32.png',
     'priority' => 910
