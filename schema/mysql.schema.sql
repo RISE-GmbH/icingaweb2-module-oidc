@@ -20,6 +20,8 @@ CREATE TABLE tbl_provider (
     textcolor  varchar(255) NOT NULL,
     caption  varchar(255) NOT NULL,
     custom_username  varchar(255) DEFAULT NULL,
+    group_name_prefix varchar(255) DEFAULT NULL,
+    group_mapping_strategy varchar(16) NOT NULL DEFAULT 'shared',
     enforce_scheme_https enum ('y', 'n') DEFAULT 'n' NOT NULL,
     azure_groups enum ('y', 'n') DEFAULT 'n' NOT NULL,
     enabled        enum ('y', 'n')  DEFAULT 'n' NOT NULL,
@@ -89,6 +91,6 @@ CREATE TABLE tbl_schema (
 
 
 INSERT INTO tbl_schema (version, timestamp, success, reason)
-VALUES ('0.6.0', UNIX_TIMESTAMP() * 1000, 'y', NULL);
+VALUES ('0.6.2', UNIX_TIMESTAMP() * 1000, 'y', NULL);
 
 
