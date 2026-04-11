@@ -15,6 +15,7 @@ CREATE TABLE tbl_provider (
     defaultgroup  TEXT DEFAULT NULL,
     required_groups  TEXT DEFAULT NULL,
     nooidcgroups  boolenum DEFAULT 'n' NOT NULL,
+    pkce  boolenum DEFAULT 'n' NOT NULL,
     usernameblacklist  TEXT DEFAULT NULL,
     buttoncolor  character varying(255) NOT NULL,
     textcolor  character varying(255) NOT NULL,

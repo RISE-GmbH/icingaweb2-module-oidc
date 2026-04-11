@@ -120,6 +120,11 @@ class Provider extends DbModel
                 'label'=>t('No OIDC Groups Request'),
                 'description'=>t('Enable this to prevent requesting any groups from the OIDC provider'),
             ],
+            'pkce'=>[
+                'fieldtype'=>'checkbox',
+                'label'=>t('PKCE client (S256)'),
+                'description'=>t('Enable PKCE client'),
+            ],
             'enabled'=>[
                 'fieldtype'=>'checkbox',
                 'label'=>t('Enabled'),
