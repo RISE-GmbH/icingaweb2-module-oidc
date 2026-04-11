@@ -15,6 +15,7 @@ CREATE TABLE tbl_provider (
     defaultgroup TEXT DEFAULT NULL,
     required_groups TEXT DEFAULT NULL,
     nooidcgroups enum ('y', 'n') DEFAULT 'n' NOT NULL,
+    pkce enum ('y', 'n') DEFAULT 'n' NOT NULL,
     usernameblacklist TEXT DEFAULT NULL,
     buttoncolor  varchar(255) NOT NULL,
     textcolor  varchar(255) NOT NULL,
