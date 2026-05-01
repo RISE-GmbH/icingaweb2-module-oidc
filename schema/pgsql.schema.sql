@@ -135,5 +135,5 @@ CREATE TABLE tbl_schema (
 
 
 INSERT INTO tbl_schema (version, "timestamp", success, reason)
-VALUES ('0.6.0', CURRENT_TIMESTAMP, 'y', NULL);
+VALUES ('0.6.1', CURRENT_TIMESTAMP, 'y', NULL);
 
