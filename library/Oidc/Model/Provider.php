@@ -243,6 +243,7 @@ class Provider extends DbModel
         $behaviors->add((new BoolCast(['nooidcgroups'])));
         $behaviors->add((new BoolCast(['enforce_scheme_https'])));
         $behaviors->add((new BoolCast(['azure_groups'])));
+        $behaviors->add((new BoolCast(['pkce'])));
         $behaviors->add(new MillisecondTimestamp(['mtime']));
         $behaviors->add(new MillisecondTimestamp(['ctime']));
     }
