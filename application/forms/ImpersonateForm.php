@@ -79,7 +79,6 @@ class ImpersonateForm extends CompatForm
 
     }
 
-
     /**
      * {@inheritdoc}
      */

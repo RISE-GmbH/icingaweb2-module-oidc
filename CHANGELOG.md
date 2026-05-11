@@ -2,9 +2,17 @@
 
 ## What's New
 
+### What's New in Version 0.7.6
+* allow same usernames and groups for different providers
+* update phpseclib to 3.0.52
+
+### What's New in Version 0.7.5
+* fix menu item missing for restricted user
+
 ### What's New in Version 0.7.4
 * feature impersonate, you can now impersonate an oidc user by clicking on the unlock sign
 * fix added missing permissions in configuration.php
+
 ### What's New in Version 0.7.3
 * feature autorelogin -> if you where previously logged in using an oidc provider you will be redirected
     to the provider which should trigger instant relogin

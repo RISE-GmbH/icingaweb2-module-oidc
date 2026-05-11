@@ -21,6 +21,10 @@ use ipl\Web\Widget\ButtonLink;
 class GroupsController extends Controller
 {
 
+    public function init()
+    {
+        $this->assertPermission('oidc/group');
+    }
     public function indexAction()
     {
 

@@ -58,33 +58,11 @@ class Provider extends DbModel
                 'description'=>t('Appname for the provider'),
                 'required'=>true
             ],
-            'syncgroups'=>[
-                'fieldtype'=>'text',
-                'label'=>'Groups to sync',
-                'description'=>t('A comma seperated list of groups to sync for example "grp-icinga-admin*, grp-icinga-user*"'),
-                'required'=>true,
-                'value'=>'*'
-            ],
-            'defaultgroup'=>[
-                'fieldtype'=>'text',
-                'label'=>'Defaultgroup',
-                'description'=>t('If this is set each user will get this particular group for example as a baseline of permissions'),
-            ],
-            'required_groups'=>[
-                'fieldtype'=>'text',
-                'label'=>'Required Groups',
-                'description'=>t('If this is set each user will need to be in one of these groups to be able to login, for example "icinga-login, ubuntu-admin", leave empty if you do not need this.'),
-            ],
-            'usernameblacklist'=>[
-                'fieldtype'=>'text',
-                'label'=>'Username Blacklist',
-                'description'=>t('A comma seperated list of usernames that are not allowed to login via oidc, for example "admin, admin-*, root'),
-            ],
             'logo'=>[
                 'fieldtype'=>'select',
                 'label'=>t('Logo'),
-                'required'=>true,
-                'multiOptions'=>$fileHelper->filelistAsSelect(),
+                'required'=>false,
+                'multiOptions'=>[''=> t('None')]+$fileHelper->filelistAsSelect(),
                 'description'=>t('Choose on of your previously uploaded logos')
             ],
             'buttoncolor'=>[
@@ -109,6 +87,51 @@ class Provider extends DbModel
                 'fieldtype'=>'text',
                 'label'=>'Custom Username',
                 'description'=>t('By default the "name" in the claim will be used as your oidc users username, here you can overrude this as long as the property exists. If if dows not exist there is a fallback on "name"'),
+            ],
+            'username_prefix'=>[
+                'fieldtype'=>'text',
+                'label'=>'Username Prefix',
+                'description'=>t('The username will be prefixed by this for example the Prefix "DEXIDP " will cause all usernames to be "DEXIDP <Username>", don´t forget the space, this can not be changed if the provider created a user'),
+                'value'=>''
+            ],
+            'groupname_prefix'=>[
+                'fieldtype'=>'text',
+                'label'=>'Groupname Prefix',
+                'description'=>t('The groupname will be prefixed by this for example the Prefix "DEXIDP " will cause all groupnames to be "DEXIDP <Groupname>", don´t forget the space, this can not be changed if the provider created a group'),
+                'value'=>''
+            ],
+            'syncgroups'=>[
+                'fieldtype'=>'text',
+                'label'=>'Groups to sync',
+                'description'=>t(
+                    'A comma seperated list of groups to sync for example "grp-icinga-admin*, grp-icinga-user*". '
+                    .'If you use a groupname prefix for this provider, you need to prefix here too'
+                ),
+                'required'=>true,
+                'value'=>'*'
+            ],
+            'defaultgroup'=>[
+                'fieldtype'=>'text',
+                'label'=>'Defaultgroup',
+                'description'=>t(
+                    'If this is set each user will get this particular group for example as a baseline of permissions. '
+                    .'If you use a groupname prefix for this provider, you need to prefix here too'
+                ),
+            ],
+            'required_groups'=>[
+                'fieldtype'=>'text',
+                'label'=>'Required Groups',
+                'description'=>t('If this is set each user will need to be in one of these groups to be able to login, '
+                    .'for example "icinga-login, ubuntu-admin", leave empty if you do not need this. '
+                    .'If you use a groupname prefix for this provider, you need to prefix here too'
+                ),
+            ],
+            'usernameblacklist'=>[
+                'fieldtype'=>'text',
+                'label'=>'Username Blacklist',
+                'description'=>t('A comma seperated list of usernames that are not allowed to login via oidc, for example "admin, admin-*, root. '
+                .'If you use a username prefix for this provider, you need to prefix here too'
+                ),
             ],
             'azure_groups'=>[
                 'fieldtype'=>'checkbox',

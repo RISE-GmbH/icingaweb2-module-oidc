@@ -6,7 +6,9 @@
 namespace Icinga\Module\Oidc\Forms;
 
 use Icinga\Module\Oidc\Common\Database;
+use Icinga\Module\Oidc\Model\Group;
 use Icinga\Module\Oidc\Model\Provider;
+use Icinga\Module\Oidc\Model\User;
 use ipl\Html\Contract\FormSubmitElement;
 use ipl\Html\FormElement\ColorElement;
 use ipl\Html\HtmlDocument;
@@ -18,6 +20,7 @@ class ProviderForm extends CompatForm
 {
 
     protected $id;
+
     /** @var Connection $db */
     protected $db;
     protected $renderCreateAndShowButton = false;
@@ -107,6 +110,18 @@ class ProviderForm extends CompatForm
             if(is_array($options)){
                 $fieldtype = $options['fieldtype']??"text";
                 unset($options['fieldtype']);
+                if($column === "username_prefix"){
+                    if( User::on($this->getDb())->filter(Filter::equal('provider_id', $this->getId()))->count() > 0){
+                        $options['readonly'] = 'readonly';
+                    }
+                }
+
+                if($column === "groupname_prefix"){
+                    if( Group::on($this->getDb())->filter(Filter::equal('provider_id', $this->getId()))->count() > 0){
+                        $options['readonly'] = 'readonly';
+                    }
+                }
+
                 if($fieldtype =="color"){
                     $this->addElement(new ColorElement($column,$options));
                 }else{
@@ -119,6 +134,7 @@ class ProviderForm extends CompatForm
                 ]);
             }
         }
+
         $this->addElement('submit', 'submit', [
             'label' => $this->getSubmitButtonLabel()
         ]);
@@ -155,10 +171,7 @@ class ProviderForm extends CompatForm
 
         $values = $this->getValues();
         $model = new Provider();
-        if(($values['nooidcgroups'] === 'y' || $values['nooidcgroups'] === true)
-            && ($values['required_groups'] !== null && $values['required_groups'] !== "")){
-            throw new \Exception("You can't use nooidcgroups and require_groups together");
-        }
+
         if ($this->id === null) {
             $values['ctime']=(new \DateTime())->format("Uv");
             $model->setValues($values);

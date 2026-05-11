@@ -39,6 +39,12 @@ class GroupMembership extends DbModel
                 'description'=>t('Name of a user'),
                 'required'=>true
             ],
+            'user_id'=>[
+                'fieldtype'=>'text',
+                'label'=>'User',
+                'description'=>t('User'),
+                'required'=>true
+            ],
             'group_id'=>[
                 'fieldtype'=>'text',
                 'label'=>'Group',
@@ -76,6 +82,7 @@ class GroupMembership extends DbModel
     public function createRelations(Relations $relations)
     {
         $relations->belongsTo('group', Group::class)->setForeignKey('id')->setCandidateKey('group_id');
+        $relations->belongsTo('user', User::class)->setForeignKey('id')->setCandidateKey('user_id');
         $relations->belongsTo('provider', Provider::class)->setForeignKey('id')->setCandidateKey('provider_id');
 
     }

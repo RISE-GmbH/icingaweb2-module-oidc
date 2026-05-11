@@ -20,6 +20,10 @@ use ipl\Web\Widget\ButtonLink;
 class ProvidersController extends Controller
 {
 
+    public function init()
+    {
+        $this->assertPermission('oidc/provider');
+    }
     public function indexAction()
     {
         if ($this->hasPermission('oidc/provider/modify')) {
