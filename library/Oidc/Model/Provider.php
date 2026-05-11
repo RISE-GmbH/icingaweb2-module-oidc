@@ -143,6 +143,11 @@ class Provider extends DbModel
                 'label'=>t('No OIDC Groups Request'),
                 'description'=>t('Enable this to prevent requesting any groups from the OIDC provider'),
             ],
+            'pkce'=>[
+                'fieldtype'=>'checkbox',
+                'label'=>t('PKCE client (S256)'),
+                'description'=>t('Enable PKCE client'),
+            ],
             'enabled'=>[
                 'fieldtype'=>'checkbox',
                 'label'=>t('Enabled'),
@@ -238,6 +243,7 @@ class Provider extends DbModel
         $behaviors->add((new BoolCast(['nooidcgroups'])));
         $behaviors->add((new BoolCast(['enforce_scheme_https'])));
         $behaviors->add((new BoolCast(['azure_groups'])));
+        $behaviors->add((new BoolCast(['pkce'])));
         $behaviors->add(new MillisecondTimestamp(['mtime']));
         $behaviors->add(new MillisecondTimestamp(['ctime']));
     }

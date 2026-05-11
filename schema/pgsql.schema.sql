@@ -17,6 +17,7 @@ CREATE TABLE tbl_provider (
     defaultgroup TEXT DEFAULT NULL,
     required_groups TEXT DEFAULT NULL,
     nooidcgroups boolenum DEFAULT 'n' NOT NULL,
+    pkce  boolenum DEFAULT 'n' NOT NULL,
     usernameblacklist TEXT DEFAULT NULL,
     buttoncolor character varying(255) NOT NULL,
     textcolor character varying(255) NOT NULL,
@@ -118,4 +119,5 @@ CREATE TABLE tbl_schema (
 );
 
 INSERT INTO tbl_schema (version, "timestamp", success, reason)
-VALUES ('0.6.2', CURRENT_TIMESTAMP, 'y', NULL);
+VALUES ('0.6.3', CURRENT_TIMESTAMP, 'y', NULL);
+

@@ -95,6 +95,10 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
 
             $redirect = "dashboard";
 
+            // PKCE client
+            if ($provider->pkce === true || $provider->pkce === 'y') {
+                $oidc->setCodeChallengeMethod('S256');
+            }
 
             if ($oidc->authenticate()) {
                 if (!empty($_COOKIE['oidc-redirect'])) {
