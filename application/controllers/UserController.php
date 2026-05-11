@@ -10,8 +10,6 @@ use Icinga\Application\Config;
 use Icinga\Application\Hook\AuditHook;
 use Icinga\Application\Hook\AuthenticationHook;
 use Icinga\Authentication\Auth;
-use Icinga\Exception\Http\HttpException;
-use Icinga\Exception\Http\HttpMethodNotAllowedException;
 use Icinga\Exception\NotFoundError;
 use Icinga\Module\Oidc\Forms\ImpersonateForm;
 use Icinga\Module\Oidc\Model\Provider;
@@ -34,15 +32,12 @@ class UserController extends Controller
 
     public function init()
     {
-        if(!$this->Auth()->hasPermission("oidc/user/modify")){
-            throw new HttpException(401,"Not allowed!");
-        }
         $this->db=Database::get();
-
     }
+
     public function importAction()
     {
-
+        $this->assertPermission('oidc/user/modify');
         $this->setTitle($this->translate('New User'));
         $name = $this->params->getRequired("name");
         $backend = $this->params->getRequired("backend");
@@ -66,7 +61,7 @@ class UserController extends Controller
 
     public function newAction()
     {
-
+        $this->assertPermission('oidc/user/modify');
         $this->setTitle($this->translate('New User'));
 
         $values = [];
@@ -99,7 +94,7 @@ class UserController extends Controller
 
     public function editAction()
     {
-
+        $this->assertPermission('oidc/user/modify');
         $this->setTitle($this->translate('Edit User'));
 
         $id = $this->params->getRequired('id');
@@ -167,6 +162,7 @@ class UserController extends Controller
     public function impersonateAction()
     {
         $this->assertPermission('oidc/user/impersonate');
+
         $this->setTitle($this->translate('Impersonate'));
 
 
@@ -189,7 +185,7 @@ class UserController extends Controller
             ->on(ImpersonateForm::ON_SUCCESS, function (ImpersonateForm $form) use ($oidcUser, $provider) {
                 $pressedButton = $form->getPressedSubmitElement();
                 if ($pressedButton) {
-                    Notification::success($this->translate('Changed User successfully'));
+                    Notification::success($this->translate('Updated User successfully'));
                     $auth = Auth::getInstance();
                     $oldUsername = $auth->getUser()->getUserName();
                     $backendType =null;
@@ -223,10 +219,11 @@ class UserController extends Controller
 
 
                     // Call provided AuthenticationHook(s) after successful login
-                    AuthenticationHook::triggerLogin($user);
+
                     $this->getResponse()->setHeader('X-Icinga-Rerender-Layout', 'yes', true);
                     $this->getResponse()->setHeader('X-Icinga-Reload-Css', 'now', true);
                     $this->getResponse()->setHeader('X-Icinga-Redirect',  rawurlencode(Url::fromPath('dashboard')->getAbsoluteUrl()), true);
+                    AuthenticationHook::triggerLogin($user);
                 }
             })
             ->handleRequest($this->getServerRequest());

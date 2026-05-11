@@ -21,6 +21,10 @@ use ipl\Web\Widget\ButtonLink;
 class UsersController extends Controller
 {
 
+    public function init()
+    {
+        $this->assertPermission('oidc/user');
+    }
     public function indexAction()
     {
 

@@ -15,6 +15,10 @@ abstract class DbModel extends Model
 
     }
 
+    public function afterSave(Connection $db){
+
+    }
+
     public function getColumns(): array
     {
         return array_keys($this->getColumnDefinitions());
@@ -65,10 +69,15 @@ abstract class DbModel extends Model
 
         } else {
             $db->update($this->getTableName(), $values, [$this->getKeyName().' = ?' => $this->id]);
+
         }
+
         if($asTransaction){
             $db->commitTransaction();
         }
+
+        $this->afterSave($db);
+
     }
 
     public function findbyPrimaryKey($id){

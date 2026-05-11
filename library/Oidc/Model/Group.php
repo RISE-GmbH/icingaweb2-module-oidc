@@ -40,15 +40,17 @@ class Group extends DbModel
                 'fieldtype'=>'text',
                 'label'=>'Name',
                 'description'=>t('A Name of a group'),
-                'required'=>true
+                'required'=>true,
+                'readonly'=>'readonly'
+
             ],
             'provider_id'=>[
                 'fieldtype'=>'select',
                 'label'=>'Provider',
                 'description'=>t('Provider'),
                 'required'=>true,
-                'multiOptions'=>(new Provider())->getAllAsArray('id','name')
-
+                'multiOptions'=>(new Provider())->getAllAsArray('id','name'),
+                'readonly'=>'readonly'
             ],
 
             'ctime'=>[

@@ -27,7 +27,6 @@ class User extends DbModel
         }
     }
 
-
     public function getTableName(): string
     {
         return 'tbl_user';
@@ -49,16 +48,17 @@ class User extends DbModel
             'name'=>[
                 'fieldtype'=>'text',
                 'label'=>'Name',
-                'description'=>t('A Name of something'),
-                'required'=>true
+                'description'=>t('A Name of the User, this cannot be changed, please delete and let recreate the user via login'),
+                'required'=>true,
+                'readonly'=>'readonly'
             ],
             'provider_id'=>[
                 'fieldtype'=>'select',
                 'label'=>'Provider',
                 'description'=>t('Provider'),
                 'required'=>true,
-                'multiOptions'=>(new Provider())->getAllAsArray('id','name')
-
+                'multiOptions'=>(new Provider())->getAllAsArray('id','name'),
+                'readonly'=>'readonly'
             ],
             'email'=>[
                 'fieldtype'=>'text',
