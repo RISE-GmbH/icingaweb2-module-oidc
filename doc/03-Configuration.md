@@ -87,10 +87,14 @@ This allows you to fetch the account using ldap with the IcingaWeb2 LDAP functio
 Under the Backend config you will also find all the settings that are experimental and can be turned on.
 
 ### Relogin
-For this feature we store a cookie for the last used oidc login url so we can redirect to the oidc login page.
+When enabled, the module stores the last OIDC login URL in the `oidc-internalurl`
+cookie. Opening the login page then starts OIDC authentication automatically.
 
-Since this breaks the logic of the AuthenticationHook and redirect to a different logoutpage, make sure to use it only if no other AuthenticationHook implements an onLogout function
+Explicit logout clears this cookie and opens the login page with an
+`oidc-logout=1` parameter, which bypasses automatic reauthentication.
 
+This feature changes the `AuthenticationHook` logout flow. Enable it only when
+no other authentication hook implements `onLogout()`.
 
 
 

@@ -121,7 +121,3 @@ if(count($this->getConfig('userbackends')->keys()) > 0){
         ->setPermission('oidc/import')
         ->setPriority(40);
 }
-
-
-$this->provideUserBackend('oidc',\Icinga\Module\Oidc\Backend\OidcUserBackend::class);
-$this->provideUserGroupBackend('oidc',\Icinga\Module\Oidc\Backend\OidcUserGroupBackend::class);

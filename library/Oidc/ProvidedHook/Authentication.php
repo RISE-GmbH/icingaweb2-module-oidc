@@ -24,7 +24,12 @@ class Authentication extends AuthenticationHook
 
         if ($relogin) {
             $oidcProviderID = $user->getAdditional('provider_id');
-            setcookie("oidc-internalurl", null, time() - 3600, str_replace("//","/",Icinga::app()->getRequest()->getBasePath()."/"));
+            setcookie(
+                "oidc-internalurl",
+                '',
+                time() - 3600,
+                str_replace("//", "/", Icinga::app()->getRequest()->getBasePath() . "/")
+            );
 
             if($oidcProviderID !== null){
                 Auth::getInstance()->removeAuthorization();

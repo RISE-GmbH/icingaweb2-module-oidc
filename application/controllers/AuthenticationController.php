@@ -11,14 +11,16 @@ use Icinga\Application\Logger;
 use Icinga\Authentication\Auth;
 use Icinga\Exception\Http\HttpException;
 use Icinga\Module\Oidc\Common\Database;
-use Icinga\Module\Oidc\LoginFormModifierHelper;
 use Icinga\Module\Oidc\Model\Group;
 use Icinga\Module\Oidc\Model\GroupMembership;
 use Icinga\Module\Oidc\Model\Provider;
+use Icinga\Module\Oidc\ProvidedHook\LoginButtonHook;
 use Icinga\User;
 use Icinga\Module\Oidc\Model\User as OidcUser;
 use Icinga\Util\StringHelper;
-use ipl\Html\Html;
+use Icinga\Web\Notification;
+use Icinga\Web\Session;
+use Icinga\Web\Url as IcingaUrl;
 use ipl\Stdlib\Filter;
 use Jumbojett\OpenIDConnectClient;
 
@@ -27,24 +29,6 @@ use Jumbojett\OpenIDConnectClient;
  */
 class AuthenticationController extends \Icinga\Controllers\AuthenticationController
 {
-    /**
-     * Log into the application
-     */
-    public function loginAction()
-    {
-        $this->view->addHelperPath(
-            Icinga::app()->getBaseDir()
-            . DIRECTORY_SEPARATOR . "application/views/helpers/"
-        );
-        $this->view->addScriptPath(
-            Icinga::app()->getBaseDir()
-            . DIRECTORY_SEPARATOR . "application/views/scripts/"
-        );
-        parent::loginAction();
-        LoginFormModifierHelper::init();
-        $this->view->form = $this->view->form . "\n" . LoginFormModifierHelper::renderAfterForm();
-    }
-
     public function realmAction()
     {
         $name = $this->params->getRequired("name");
@@ -78,7 +62,7 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
             if ($relogin) {
                 setcookie(
                     "oidc-internalurl",
-                    $oidcUrl,
+                    (string) $oidcUrl,
                     time() + 60 * 60 * 24 * 3,
                     str_replace("//", "/", Icinga::app()->getRequest()->getBasePath() . "/")
                 ); // needs to be a cookie to work after logout
@@ -102,7 +86,18 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
 
             if ($oidc->authenticate()) {
                 if (!empty($_COOKIE['oidc-redirect'])) {
-                    $redirect = $_COOKIE['oidc-redirect'];
+                    $redirectUrl = IcingaUrl::fromPath(
+                        (string) $_COOKIE['oidc-redirect'],
+                        [],
+                        $this->getRequest()
+                    );
+                    if (
+                        ! $redirectUrl->isExternal()
+                        && ! str_contains((string) $redirectUrl->getPath(), 'authentication/logout')
+                    ) {
+                        $redirect = $redirectUrl;
+                    }
+
                     setcookie(
                         "oidc-redirect",
                         "",
@@ -144,11 +139,17 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                     }
                 }
                 if (session_status() == PHP_SESSION_ACTIVE) {
-                    // Icinga wants to handle the session so we destroy ours
+                    // Destroy Jumbojett's native session before Icinga persists the authenticated user.
                     session_destroy();
                 }
             }
         } catch (\Throwable $e) {
+            if (session_status() === PHP_SESSION_ACTIVE) {
+                // Jumbojett may leave its native PHP session active after an exception.
+                // Destroy it before Icinga handles the failure redirect.
+                session_destroy();
+            }
+
             Logger::error($e->getMessage());
             Logger::error($e->getTraceAsString());
         }
@@ -321,21 +322,29 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
         });
     }
 
-    public function failedAction()
+    public function failedAction(): void
     {
-        $this->loginAction();
-        $div = Html::tag('div', ['class' => 'icinga-module module-oidc']);
-        $html = Html::tag('p', ['class' => 'oidc-error'], "OIDC: Something went wrong!");
-        $div->add($html);
-        $this->view->form = $this->view->form . $div;
-        $this->_helper->viewRenderer->setRender('authentication/login', null, true);
+        setcookie(
+            'oidc-internalurl',
+            '',
+            time() - 3600,
+            str_replace('//', '/', Icinga::app()->getRequest()->getBasePath() . '/')
+        );
+        Notification::error(LoginButtonHook::ERROR_MESSAGE);
+        // Let Notification create and merge its internal message objects instead of
+        // duplicating their session format. Persist the queue before redirectNow()
+        // sends headers because Notification's destructor would write too late. The
+        // login hook consumes the queue because LoginPage does not render it.
+        $notifications = Notification::getInstance();
+        $session = Session::getSession();
+        $session->set(Notification::SESSION_KEY, $notifications->popMessages());
+        $session->write();
+        $this->redirectNow('authentication/login?oidc-error=1');
     }
 
-    public function oidcLogoutAction()
+    public function oidcLogoutAction(): void
     {
-        // This workarround will not trigger the relogin
-        $this->_helper->viewRenderer->setRender('authentication/login', null, true);
-        $this->loginAction();
+        $this->redirectNow('authentication/login?oidc-logout=1');
     }
 
 }
