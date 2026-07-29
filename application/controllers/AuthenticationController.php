@@ -22,6 +22,7 @@ use Icinga\Web\Notification;
 use Icinga\Web\Session;
 use Icinga\Web\Url as IcingaUrl;
 use ipl\Stdlib\Filter;
+use ipl\Web\Url;
 use Jumbojett\OpenIDConnectClient;
 
 /**
@@ -62,7 +63,10 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
             if ($relogin) {
                 setcookie(
                     "oidc-internalurl",
-                    (string) $oidcUrl,
+                    (string) Url::fromPath(
+                        'oidc/authentication/realm',
+                        ['name' => $name]
+                    )->getRelativeUrl(),
                     time() + 60 * 60 * 24 * 3,
                     str_replace("//", "/", Icinga::app()->getRequest()->getBasePath() . "/")
                 ); // needs to be a cookie to work after logout

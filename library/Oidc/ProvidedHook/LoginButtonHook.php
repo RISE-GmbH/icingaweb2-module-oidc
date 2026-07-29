@@ -39,23 +39,38 @@ class LoginButtonHook extends BaseLoginButtonHook
     public function getButtons(): array
     {
         $request = Icinga::app()->getRequest();
-        // Core invokes login button hooks while assembling authentication/login.
-        if (
-            Config::module('oidc')->get('experimental', 'relogin', '0') === '1'
-            && $request->getParam('oidc-logout') !== '1'
-            && ! empty($_COOKIE['oidc-internalurl'])
-        ) {
-            $reloginUrl = Url::fromPath((string) $_COOKIE['oidc-internalurl'], [], $request);
-            if (! $reloginUrl->isExternal() && $reloginUrl->getPath() === 'oidc/authentication/realm') {
-                $request->getResponse()->redirectAndExit($reloginUrl);
-            }
-        }
-
         $buttons = $request->getParam('oidc-error') === '1'
             ? $this->getErrorNotificationButtons()
             : [];
 
         try {
+            // Core invokes login button hooks while assembling authentication/login.
+            if (
+                Config::module('oidc')->get('experimental', 'relogin', '0') === '1'
+                && $request->getParam('oidc-logout') !== '1'
+                && array_key_exists('oidc-internalurl', $_COOKIE)
+            ) {
+                $providerName = self::parseReloginProviderName(
+                    $_COOKIE['oidc-internalurl'],
+                    $request->getBasePath()
+                );
+                if ($providerName === null) {
+                    $this->expireReloginCookie();
+                } else {
+                    $provider = Provider::on(Database::get())
+                        ->filter(Filter::equal('name', $providerName))
+                        ->filter(Filter::equal('enabled', 'y'))
+                        ->first();
+                    if ($provider === null) {
+                        $this->expireReloginCookie();
+                    } else {
+                        $request->getResponse()->redirectAndExit(
+                            Url::fromPath('oidc/authentication/realm', ['name' => $providerName])
+                        );
+                    }
+                }
+            }
+
             $providers = Provider::on(Database::get())->filter(Filter::equal('enabled', 'y'));
 
             foreach ($providers as $provider) {
@@ -95,6 +110,96 @@ class LoginButtonHook extends BaseLoginButtonHook
         }
 
         return $buttons;
+    }
+
+    /**
+     * Extract the provider name from a current or legacy relogin cookie
+     *
+     * @param mixed  $value    Cookie value to parse
+     * @param string $basePath Current Icinga Web base path
+     *
+     * @return ?string
+     */
+    protected static function parseReloginProviderName(mixed $value, string $basePath): ?string
+    {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+
+        // parse_url() accepts malformed percent escapes, so require every percent
+        // sign to start a complete two-digit hexadecimal escape.
+        if (preg_match('/%(?![0-9A-Fa-f]{2})/', $value) === 1) {
+            return null;
+        }
+
+        try {
+            $parts = parse_url($value);
+        } catch (ValueError) {
+            return null;
+        }
+
+        if ($parts === false || array_key_exists('fragment', $parts)) {
+            return null;
+        }
+
+        // Legacy absolute cookies may carry any HTTP(S) host, but it is never used.
+        $scheme = $parts['scheme'] ?? null;
+        if (
+            ($scheme !== null && ! in_array(strtolower($scheme), ['http', 'https'], true))
+            || ($scheme === null && isset($parts['host']))
+            || ($scheme !== null && ! isset($parts['host']))
+        ) {
+            return null;
+        }
+
+        // Compare the route without its optional base path or leading slash.
+        $path = ltrim($parts['path'] ?? '', '/');
+        $normalizedBasePath = trim($basePath, '/');
+        if (
+            $normalizedBasePath !== ''
+            && str_starts_with($path, $normalizedBasePath . '/')
+        ) {
+            $path = substr($path, strlen($normalizedBasePath) + 1);
+        }
+
+        if ($path !== 'oidc/authentication/realm' || ! isset($parts['query'])) {
+            return null;
+        }
+
+        // Parse pairs explicitly to reject duplicate and array-valued names.
+        $providerName = null;
+        foreach (explode('&', $parts['query']) as $field) {
+            [$name, $encodedValue] = Str::symmetricSplit($field, '=', 2);
+            $name = rawurldecode((string) $name);
+            if ($name !== 'name') {
+                if (str_starts_with($name, 'name[')) {
+                    return null;
+                }
+
+                continue;
+            }
+
+            if ($providerName !== null || $encodedValue === null) {
+                return null;
+            }
+
+            $providerName = rawurldecode($encodedValue);
+        }
+
+        return $providerName === null || $providerName === '' ? null : $providerName;
+    }
+
+    /**
+     * Expire the automatic relogin cookie
+     */
+    protected function expireReloginCookie(): void
+    {
+        setcookie(
+            'oidc-internalurl',
+            '',
+            time() - 3600,
+            str_replace('//', '/', Icinga::app()->getRequest()->getBasePath() . '/')
+        );
     }
 
     /**
