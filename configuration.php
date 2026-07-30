@@ -69,9 +69,7 @@ $section = $this->menuSection(N_('Oidc'), [
 ]);
 
 
-?>
 
-<?php
 
 $this->provideConfigTab('backend', array(
     'title' => $this->translate('Configure the database backend'),
@@ -85,8 +83,6 @@ $this->provideConfigTab('importbackend', array(
     'url' => 'config/import-backend'
 ));
 
-?>
-<?php
 $section->add(N_('Provider'))
     ->setUrl('oidc/providers')
     ->setPermission('oidc/provider')
@@ -112,9 +108,7 @@ $section->add(N_('Group'))
     ->setUrl('oidc/groups')
     ->setPermission('oidc/group')
     ->setPriority(30);
-?>
 
-<?php
 
 $section->add(N_('Files'))
     ->setUrl('oidc/file')
@@ -127,9 +121,3 @@ if(count($this->getConfig('userbackends')->keys()) > 0){
         ->setPermission('oidc/import')
         ->setPriority(40);
 }
-
-
-$this->provideUserBackend('oidc',\Icinga\Module\Oidc\Backend\OidcUserBackend::class);
-$this->provideUserGroupBackend('oidc',\Icinga\Module\Oidc\Backend\OidcUserGroupBackend::class);
-
-?>

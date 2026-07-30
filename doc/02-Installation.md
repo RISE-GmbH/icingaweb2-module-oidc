@@ -2,8 +2,9 @@
 
 ## Requirements <a id="module-oidc-installation-requirements"></a>
 
-* Icinga Web 2 (&gt;= 2.12.1)
-* PHP (&gt;= 7.3)
+* Icinga Web 2 (≥2.13.0)
+* PHP (≥8.2)
+* Icinga PHP Library (ipl) (≥0.19.0)
 
 
 ## Installation from .tar.gz <a id="module-oidc-installation-manual"></a>
