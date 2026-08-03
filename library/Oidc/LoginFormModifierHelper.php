@@ -50,13 +50,13 @@ class LoginFormModifierHelper
         try {
             $providers = Provider::on(Database::get())->filter(Filter::equal('enabled', 'y'));
             if($providers->count() === 0){
-                return '';
+                return Html::tag("div", ["class" => "icinga-module module-oidc"]);
             }
         }catch (\Throwable $e){
             Logger::error($e->getMessage()."\n".$e->getTraceAsString());
             $html = Html::tag('p', ['class' => 'oidc-error'], "OIDC: Something went wrong!");
             $allProviders->add($html);
-            return $allProviders->render();
+            return $allProviders;
         }
 
         $fileHelper = new FileHelper(Module::get('oidc')->getConfigDir() . DIRECTORY_SEPARATOR . "files");
@@ -116,7 +116,7 @@ class LoginFormModifierHelper
             $allProviders->add($html);
             return $allProviders->render();
         }
-        return $allProviders->render();
+        return $allProviders;
 
     }
 

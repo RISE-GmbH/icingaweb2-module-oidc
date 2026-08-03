@@ -20,4 +20,5 @@ class LoginFormModifier extends LoginFormModifierHook
         return LoginFormModifierHelper::renderAfterForm();
     }
 
+
 }
