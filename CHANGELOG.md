@@ -2,6 +2,11 @@
 
 ## What's New
 
+### What's New in Version 0.7.7
+* compatibility for icingaweb2 2.14
+* legacy compatibility for icingaweb2 < 2.14
+
+
 ### What's New in Version 0.7.6
 * allow same usernames and groups for different providers
 * update phpseclib to 3.0.52

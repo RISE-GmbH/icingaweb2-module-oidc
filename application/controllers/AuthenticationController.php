@@ -1,7 +1,10 @@
 <?php
-/* Icinga Web 2 | (c) 2013 Icinga Development Team | GPLv2+ */
+
+// SPDX-FileCopyrightText: 2018 Icinga GmbH <https://icinga.com>
+// SPDX-License-Identifier: GPL-3.0-or-later
 
 namespace Icinga\Module\Oidc\Controllers;
+
 
 use Icinga\Application\Config;
 use Icinga\Application\Hook\AuditHook;
@@ -10,28 +13,41 @@ use Icinga\Application\Icinga;
 use Icinga\Application\Logger;
 use Icinga\Authentication\Auth;
 use Icinga\Exception\Http\HttpException;
-use Icinga\Module\Oidc\Common\Database;
+use Icinga\Module\Oidc\Common\Database as OidcDatabase;
 use Icinga\Module\Oidc\LoginFormModifierHelper;
-use Icinga\Module\Oidc\Model\Group;
-use Icinga\Module\Oidc\Model\GroupMembership;
 use Icinga\Module\Oidc\Model\Provider;
-use Icinga\User;
 use Icinga\Module\Oidc\Model\User as OidcUser;
+use Icinga\Module\Oidc\Model\Group as OidcGroup;
+use Icinga\Module\Oidc\Model\GroupMembership as OidcGroupMembership;
+use Icinga\User;
 use Icinga\Util\StringHelper;
 use ipl\Html\Html;
 use ipl\Stdlib\Filter;
 use Jumbojett\OpenIDConnectClient;
+
 
 /**
  * Application wide controller for authentication
  */
 class AuthenticationController extends \Icinga\Controllers\AuthenticationController
 {
+
+    /**
+     * {@inheritdoc}
+     */
+    protected $requiresAuthentication = false;
+
+    /**
+     * {@inheritdoc}
+     */
+    protected $innerLayout = 'inline';
+
     /**
      * Log into the application
      */
     public function loginAction()
     {
+
         $this->view->addHelperPath(
             Icinga::app()->getBaseDir()
             . DIRECTORY_SEPARATOR . "application/views/helpers/"
@@ -40,17 +56,61 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
             Icinga::app()->getBaseDir()
             . DIRECTORY_SEPARATOR . "application/views/scripts/"
         );
+
         parent::loginAction();
-        LoginFormModifierHelper::init();
-        $this->view->form = $this->view->form . "\n" . LoginFormModifierHelper::renderAfterForm();
+
+       $element = $this->findElementByAttribute($this->content,'class',"login-form");
+       if($element !== null) {
+           $element->addHtml(LoginFormModifierHelper::renderAfterForm());
+       }
     }
+
+    /**
+     * AI generated ChatGPT 5.5
+     * Recursively finds the first element with the given value and attributeName.
+     *
+     * @param object $element
+     * @param string $id
+     * @return object
+     */
+    protected function findElementByAttribute($element, string $attributeName, string $value)
+    {
+        $content = $element->getContent();
+        if(!is_iterable($content)) {
+            return null;
+        }
+        foreach ($content as $innerElement) {
+            // Ignore elements without an id attribute
+            try {
+                $attribute = $innerElement->getAttribute($attributeName);
+                if ($attribute && $attribute->getValue() === $value) {
+                    return $innerElement;
+                }
+            } catch (\Throwable $e) {
+                // No id attribute
+            }
+
+            // Search children recursively if this element has content
+            try {
+                if (method_exists($innerElement, 'getContent')) {
+                    return $this->findElementByAttribute($innerElement, $attributeName, $value);
+                }
+            } catch (\RuntimeException $e) {
+                // Not found in this subtree, continue with next sibling
+            }
+        }
+
+        return null;
+    }
+
+
 
     public function realmAction()
     {
         $name = $this->params->getRequired("name");
 
         $authSuccess = false;
-        $provider = Provider::on(Database::get())->filter(Filter::equal('name', $name))->first();
+        $provider = Provider::on(OidcDatabase::get())->filter(Filter::equal('name', $name))->first();
         if ($provider === null) {
             throw new HttpException(404, "Provider not found");
         }
@@ -156,7 +216,7 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
 
         if ($authSuccess && $claims != null) {
             //Logger::info("Oidc: Using claims: " . json_encode($claims));
-            $oidcUser = OidcUser::on(Database::get())->filter(Filter::equal('name', $username))->filter(
+            $oidcUser = OidcUser::on(OidcDatabase::get())->filter(Filter::equal('name', $username))->filter(
                 Filter::equal('provider_id', $provider->id)
             )->first();
             if ($oidcUser === null) {
@@ -222,24 +282,24 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                         continue;
                     }
 
-                    $oidcGroup = Group::on(Database::get())
+                    $oidcGroup = OidcGroup::on(OidcDatabase::get())
                         ->filter(Filter::equal('name', $groupname))
                         ->filter(Filter::equal('provider_id', $provider->id))
                         ->first();
                     if ($oidcGroup === null) {
-                        $oidcGroup = new Group();
+                        $oidcGroup = new OidcGroup();
                         $oidcGroup->name = $groupname;
                         $oidcGroup->provider_id = $provider->id;
                         $oidcGroup->ctime = (new \DateTime());
                         $oidcGroup->save();
                     }
 
-                    $membership = GroupMembership::on(Database::get())
+                    $membership = OidcGroupMembership::on(OidcDatabase::get())
                         ->filter(Filter::equal('user_id', $oidcUser->id))
                         ->filter(Filter::equal('group_id', $oidcGroup->id))
                         ->first();
                     if ($membership === null) {
-                        $membership = new GroupMembership();
+                        $membership = new OidcGroupMembership();
                         $membership->username = $oidcUser->name;
                         $membership->user_id = $oidcUser->id;
                         $membership->group_id = $oidcGroup->id;
@@ -248,9 +308,9 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
                         $membership->save();
                     }
                 }
-                $memberships = GroupMembership::on(Database::get())->filter(Filter::equal('user_id', $oidcUser->id));
+                $memberships = OidcGroupMembership::on(OidcDatabase::get())->filter(Filter::equal('user_id', $oidcUser->id));
                 foreach ($memberships as $membership) {
-                    $group = Group::on(Database::get())->filter(Filter::equal('id', $membership->group_id))->first();
+                    $group = OidcGroup::on(OidcDatabase::get())->filter(Filter::equal('id', $membership->group_id))->first();
                     if ($group !== null && !in_array($group->name, $claims->groups)) {
                         $membership->delete();
                     }
@@ -323,19 +383,18 @@ class AuthenticationController extends \Icinga\Controllers\AuthenticationControl
 
     public function failedAction()
     {
+        $this->_helper->viewRenderer->setRender('authentication/login', null, true);
         $this->loginAction();
         $div = Html::tag('div', ['class' => 'icinga-module module-oidc']);
         $html = Html::tag('p', ['class' => 'oidc-error'], "OIDC: Something went wrong!");
         $div->add($html);
-        $this->view->form = $this->view->form . $div;
-        $this->_helper->viewRenderer->setRender('authentication/login', null, true);
+        $this->addContent($div);
     }
 
     public function oidcLogoutAction()
     {
         // This workarround will not trigger the relogin
-        $this->_helper->viewRenderer->setRender('authentication/login', null, true);
+        //$this->_helper->viewRenderer->setRender('authentication/login', null, true);
         $this->loginAction();
     }
-
 }
