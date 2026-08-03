@@ -13,7 +13,6 @@ if(!Icinga::app()->isCli()){
     }else{
         $versions = \Icinga\Application\Version::get();
         if (version_compare($versions['appVersion'], "2.14.0", '>=')) {
-            \Icinga\Application\Logger::error("New ".$versions['appVersion']);
             $this->addRoute('authentication/login', new Zend_Controller_Router_Route_Static(
                 'authentication/login',
                 [
@@ -23,8 +22,6 @@ if(!Icinga::app()->isCli()){
                 ]
             ));
         }else{
-            \Icinga\Application\Logger::error("legacy ".$versions['appVersion']);
-
             $this->addRoute('authentication/login', new Zend_Controller_Router_Route_Static(
                 'authentication/login',
                 [
