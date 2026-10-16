@@ -143,14 +143,15 @@ class LegacyAuthenticationController extends \Icinga\Controllers\AuthenticationC
                         throw new HttpException(401, "Username not allowed for this provider");
                     }
                 }
-                if (session_status() == PHP_SESSION_ACTIVE) {
-                    // Icinga wants to handle the session so we destroy ours
-                    session_destroy();
-                }
             }
         } catch (\Throwable $e) {
             Logger::error($e->getMessage());
             Logger::error($e->getTraceAsString());
+        } finally {
+            if (session_status() == PHP_SESSION_ACTIVE) {
+                // Icinga wants to handle the session so we destroy ours
+                session_destroy();
+            }
         }
 
 
